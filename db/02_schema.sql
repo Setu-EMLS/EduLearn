@@ -1,5 +1,5 @@
 /* =====================================================================
-   PowerSoft IT LMS - 02: database schema (all tables)
+   EduLearn LMS - 02: database schema (all tables)
    Generated from the Entity Framework Core migrations:
      dotnet ef migrations script --idempotent -o ../db/02_schema.sql
    Idempotent: safe to run on an empty database or one that already has
@@ -9,7 +9,6 @@
 
 USE [EduLearn];
 GO
-
 IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
 BEGIN
     CREATE TABLE [__EFMigrationsHistory] (
@@ -1591,6 +1590,149 @@ IF NOT EXISTS (
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
     VALUES (N'20261001060000_WebsiteInquiries', N'9.0.4');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    ALTER TABLE [LiveClasses] ADD [BatchId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    ALTER TABLE [Enrollments] ADD [BatchId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    ALTER TABLE [Assignments] ADD [BatchId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    ALTER TABLE [Announcements] ADD [BatchId] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    CREATE TABLE [Batches] (
+        [Id] int NOT NULL IDENTITY,
+        [CourseId] int NOT NULL,
+        [Name] nvarchar(100) NOT NULL,
+        [TeacherId] int NULL,
+        [StartDate] datetime2 NOT NULL,
+        [EndDate] datetime2 NULL,
+        [Schedule] nvarchar(100) NULL,
+        [Seats] int NULL,
+        [IsAdmissionOpen] bit NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_Batches] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_Batches_Courses_CourseId] FOREIGN KEY ([CourseId]) REFERENCES [Courses] ([Id]) ON DELETE CASCADE,
+        CONSTRAINT [FK_Batches_Teachers_TeacherId] FOREIGN KEY ([TeacherId]) REFERENCES [Teachers] ([Id])
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    CREATE INDEX [IX_LiveClasses_BatchId] ON [LiveClasses] ([BatchId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    CREATE INDEX [IX_Enrollments_BatchId] ON [Enrollments] ([BatchId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    CREATE INDEX [IX_Assignments_BatchId] ON [Assignments] ([BatchId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    CREATE INDEX [IX_Announcements_BatchId] ON [Announcements] ([BatchId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_Batches_CourseId_Name] ON [Batches] ([CourseId], [Name]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    CREATE INDEX [IX_Batches_TeacherId] ON [Batches] ([TeacherId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    ALTER TABLE [Announcements] ADD CONSTRAINT [FK_Announcements_Batches_BatchId] FOREIGN KEY ([BatchId]) REFERENCES [Batches] ([Id]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    ALTER TABLE [Assignments] ADD CONSTRAINT [FK_Assignments_Batches_BatchId] FOREIGN KEY ([BatchId]) REFERENCES [Batches] ([Id]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    ALTER TABLE [Enrollments] ADD CONSTRAINT [FK_Enrollments_Batches_BatchId] FOREIGN KEY ([BatchId]) REFERENCES [Batches] ([Id]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    ALTER TABLE [LiveClasses] ADD CONSTRAINT [FK_LiveClasses_Batches_BatchId] FOREIGN KEY ([BatchId]) REFERENCES [Batches] ([Id]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261001115056_Batches'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261001115056_Batches', N'9.0.4');
 END;
 
 COMMIT;

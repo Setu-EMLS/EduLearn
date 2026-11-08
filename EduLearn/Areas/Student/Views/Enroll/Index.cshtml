@@ -1,0 +1,150 @@
+@model Course
+@{
+    ViewData["Title"] = "Enroll";
+    var existing = ViewBag.Existing as Enrollment;
+    bool isFull = ViewBag.IsFull;
+    var gateways = (List<PaymentGetway>)ViewBag.Gateways;
+    var lessons = Model.Sections.Sum(s => s.Lessons.Count);
+    bool hasBatches = ViewBag.HasBatches;
+    var batches = (List<Batch>)ViewBag.Batches;
+    var seatsTaken = (Dictionary<int, int>)ViewBag.SeatsTaken;
+    int? selectedBatchId = ViewBag.SelectedBatchId;
+}
+<div class="row g-3">
+    <div class="col-lg-5 order-lg-2">
+        <div class="course-card">
+            <img src="@UiHelpers.CourseImage(Model.ThumbnailPath)" alt="" />
+            <div class="course-card-body">
+                <span class="badge bg-light text-dark border align-self-start">@Model.Coursecategory?.Title</span>
+                <h5>@Model.Title</h5>
+                <p class="meta mb-1">@Model.ShortDescription</p>
+                <ul class="list-clean small">
+                    <li><i class="fa-solid fa-person-chalkboard me-2 text-brand"></i>@(Model.Teacher?.Name ?? "EduLearn")</li>
+                    <li><i class="fa-solid fa-circle-play me-2 text-brand"></i>@lessons lessons in @Model.Sections.Count sections</li>
+                    @if (!string.IsNullOrEmpty(Model.Duration)) { <li><i class="fa-regular fa-clock me-2 text-brand"></i>@Model.Duration</li> }
+                    @if (!hasBatches && !string.IsNullOrEmpty(Model.Schedule)) { <li><i class="fa-regular fa-calendar me-2 text-brand"></i>@Model.Schedule</li> }
+                </ul>
+                <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                    <span class="text-muted">Course fee</span>
+                    <span class="fs-4 fw-bold text-brand">@UiHelpers.Money(Model.Price)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7 order-lg-1">
+        @if (existing?.Status == EnrollmentStatus.Pending)
+        {
+            <div class="card-lms">
+                <div class="empty-state">
+                    <i class="fa-solid fa-hourglass-half text-warning"></i>
+                    <h5 class="text-dark">Waiting for verification</h5>
+                    <p>We received your payment details (TrxID <code>@existing.TransactionId</code>) on @existing.EnrolledAt.ToString("dd MMM yyyy"). You'll get access as soon as the office confirms it.</p>
+                    <a href="/Student/Courses" class="btn btn-outline-brand">Back to my courses</a>
+                </div>
+            </div>
+        }
+        else if (hasBatches && !batches.Any())
+        {
+            <div class="card-lms"><div class="empty-state"><i class="fa-regular fa-calendar-xmark"></i><h5 class="text-dark">Admission is closed</h5><p>No batch of this course is taking admission right now. Please contact the office about the next batch.</p><a href="/ContactUs" class="btn btn-outline-brand">Contact the office</a></div></div>
+        }
+        else if (isFull)
+        {
+            <div class="card-lms"><div class="empty-state"><i class="fa-solid fa-users-slash"></i><h5 class="text-dark">@(hasBatches ? "All batches are full" : "This course is full")</h5><p>Please contact the office about the next batch.</p></div></div>
+        }
+        else
+        {
+            if (existing?.Status == EnrollmentStatus.Rejected)
+            {
+                <div class="alert alert-danger"><strong>Your previous request was rejected.</strong> @existing.AdminNote</div>
+            }
+            <form asp-action="Index" asp-route-id="@Model.Id" method="post" class="card-lms">
+                @if (hasBatches)
+                {
+                    <div class="card-lms-header"><h5><i class="fa-solid fa-people-group me-2 text-brand"></i>Choose your batch</h5></div>
+                    <div class="card-lms-body border-bottom">
+                        <div class="row g-2">
+                            @foreach (var b in batches)
+                            {
+                                var taken = seatsTaken.GetValueOrDefault(b.Id);
+                                var full = b.Seats > 0 && taken >= b.Seats;
+                                <div class="col-md-6">
+                                    <label class="quiz-option h-100 align-items-start @(full ? "opacity-50" : "")">
+                                        <input class="form-check-input mt-1" type="radio" name="batchId" value="@b.Id" required
+                                               @(full ? "disabled" : "") @(b.Id == selectedBatchId ? "checked" : "") />
+                                        <span>
+                                            <strong>@b.Name</strong>
+                                            <span class="d-block small"><i class="fa-regular fa-calendar me-1 text-brand"></i>Starts @b.StartDate.ToString("dd MMM yyyy")@(b.EndDate != null ? " – " + b.EndDate.Value.ToString("dd MMM yyyy") : "")</span>
+                                            @if (!string.IsNullOrEmpty(b.Schedule)) { <span class="d-block small"><i class="fa-regular fa-clock me-1 text-brand"></i>@b.Schedule</span> }
+                                            <span class="d-block small"><i class="fa-solid fa-person-chalkboard me-1 text-brand"></i>@(b.Teacher?.Name ?? Model.Teacher?.Name ?? "EduLearn")</span>
+                                            <span class="d-block small @(full ? "text-danger" : "text-success")">
+                                                @(full ? "Full" : b.Seats > 0 ? $"{b.Seats - taken} seat(s) left" : "Seats available")
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                @if (Model.IsFree)
+                {
+                    <div class="card-lms-body text-center py-5">
+                        <i class="fa-solid fa-gift fa-3x text-brand mb-3"></i>
+                        <h4>This course is free</h4>
+                        <p class="text-muted">Enroll now and start learning straight away.</p>
+                        <button type="submit" class="btn btn-brand btn-lg px-5">Enroll for free</button>
+                    </div>
+                }
+                else
+                {
+                    <div class="card-lms-header"><h5><i class="fa-solid fa-wallet me-2 text-brand"></i>Pay &amp; enroll</h5></div>
+                    <div class="card-lms-body">
+                        <ol class="mb-4">
+                            <li>Send <strong>@UiHelpers.Money(Model.Price)</strong> to one of the accounts below.</li>
+                            <li>Enter the method you used and the <strong>Transaction ID</strong> from the confirmation SMS.</li>
+                            <li>The office verifies the payment and unlocks the course for you.</li>
+                        </ol>
+
+                        @if (!gateways.Any())
+                        {
+                            <div class="alert alert-warning">Online payment details are not set up yet. Please pay at the office and ask them to enroll you.</div>
+                        }
+                        <div class="row g-2 mb-4">
+                            @foreach (var g in gateways)
+                            {
+                                <div class="col-md-6">
+                                    <label class="quiz-option h-100 align-items-start">
+                                        <input class="form-check-input mt-1" type="radio" name="paymentMethod" value="@g.Name" required />
+                                        <span>
+                                            <strong>@g.Name</strong>
+                                            @foreach (var a in g.GetwayInfo)
+                                            {
+                                                <span class="d-block small"><span class="text-muted">@a.Name:</span> <strong>@a.No</strong> @(string.IsNullOrEmpty(a.Branch) ? "" : "(" + a.Branch + ")")</span>
+                                            }
+                                            @if (!string.IsNullOrEmpty(g.Description)) { <span class="d-block small text-muted">@g.Description</span> }
+                                        </span>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="senderNumber">Your sender number / account</label>
+                                <input class="form-control" id="senderNumber" name="senderNumber" maxlength="50" placeholder="01XXXXXXXXX" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="transactionId">Transaction ID</label>
+                                <input class="form-control" id="transactionId" name="transactionId" maxlength="100" required placeholder="e.g. 9JH7K2LMN0" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-lms-body border-top">
+                        <button type="submit" class="btn btn-brand px-4" @(gateways.Any() ? "" : "disabled")>Submit payment details</button>
+                    </div>
+                }
+            </form>
+        }
+    </div>
+</div>

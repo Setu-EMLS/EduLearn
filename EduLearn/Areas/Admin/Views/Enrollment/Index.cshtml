@@ -1,0 +1,142 @@
+@using EduLearn.Services.Interfaces
+@model List<Enrollment>
+@{
+    ViewData["Title"] = "Enrollments";
+    var status = ViewBag.Status as EnrollmentStatus?;
+    var counts = (Dictionary<EnrollmentStatus, int>)ViewBag.Counts;
+    var progress = (Dictionary<int, CourseProgress>)ViewBag.Progress;
+    var total = counts.Values.Sum();
+    int? courseId = ViewBag.CourseId;
+    int? batchId = ViewBag.BatchId;
+    var filter = (courseId != null ? "&courseId=" + courseId : "") + (batchId != null ? "&batchId=" + batchId : "");
+}
+<div class="page-head">
+    <div>
+        <h2>Enrollments</h2>
+        <p>Verify payments and approve course access. Free courses are approved automatically.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-brand"><i class="fa-solid fa-plus me-1"></i> Enroll a student</a>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+<ul class="nav nav-pills gap-1 mb-0">
+    <li class="nav-item"><a class="nav-link @(status == null ? "active" : "")" href="/Admin/Enrollment?@filter.TrimStart('&')">All <span class="badge bg-light text-dark ms-1">@total</span></a></li>
+    @foreach (var s in Enum.GetValues<EnrollmentStatus>())
+    {
+        <li class="nav-item">
+            <a class="nav-link @(status == s ? "active" : "")" href="/Admin/Enrollment?status=@s@filter">
+                @s <span class="badge @(s == EnrollmentStatus.Pending && counts.GetValueOrDefault(s) > 0 ? "bg-warning text-dark" : "bg-light text-dark") ms-1">@counts.GetValueOrDefault(s)</span>
+            </a>
+        </li>
+    }
+</ul>
+<form method="get" class="d-flex flex-wrap gap-2 align-items-start">
+    @if (status != null) { <input type="hidden" name="status" value="@status" /> }
+    <select class="form-select form-select-sm w-auto" id="filterCourse" name="courseId" asp-items="ViewBag.Courses" aria-label="Course" onchange="this.form.batchId.value = ''; this.form.submit()">
+        <option value="">All courses</option>
+    </select>
+    <div class="batch-filter">
+        <partial name="_BatchSelect" model="@(new BatchSelectModel { Name = "batchId", CourseSelectId = "filterCourse", Selected = batchId, Batches = ViewBag.Batches, Label = "", EmptyText = "All batches" })" />
+    </div>
+</form>
+</div>
+
+<div class="card-lms">
+    <div class="card-lms-body">
+        <div class="table-responsive">
+            <table class="table datatable">
+                <thead>
+                    <tr><th>Student</th><th>Course</th><th>Payment</th><th>Requested</th><th>Progress</th><th>Status</th><th class="no-sort text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in Model)
+                    {
+                        var p = progress.GetValueOrDefault(e.Id, new CourseProgress(0, 0));
+                        <tr>
+                            <td>
+                                <a href="/Admin/Student/Details/@e.StudentId" class="fw-semibold">@e.Student.Name</a>
+                                <small class="text-muted d-block">@e.Student.StudentID</small>
+                            </td>
+                            <td>
+                                @e.Course.Title
+                                @if (e.Batch != null) { <small class="d-block"><i class="fa-solid fa-people-group me-1 text-muted"></i><a href="/Admin/Batch/Details/@e.BatchId">@e.Batch.Name</a></small> }
+                            </td>
+                            <td class="text-nowrap">
+                                <span class="fw-semibold">@UiHelpers.Money(e.Amount)</span>
+                                @if (!string.IsNullOrEmpty(e.PaymentMethod))
+                                {
+                                    <small class="d-block text-muted">@e.PaymentMethod @(string.IsNullOrEmpty(e.SenderNumber) ? "" : "· " + e.SenderNumber)</small>
+                                }
+                                @if (!string.IsNullOrEmpty(e.TransactionId))
+                                {
+                                    <small class="d-block">TrxID: <code>@e.TransactionId</code></small>
+                                }
+                            </td>
+                            <td class="text-nowrap" data-order="@e.EnrolledAt.Ticks">@e.EnrolledAt.ToString("dd MMM yyyy, h:mm tt")</td>
+                            <td style="min-width:120px">
+                                @if (e.HasAccess)
+                                {
+                                    <div class="progress mb-1"><div class="progress-bar" style="width:@p.Percent%"></div></div>
+                                    <small class="text-muted">@p.Percent%</small>
+                                }
+                                else { <span class="text-muted">—</span> }
+                            </td>
+                            <td>
+                                <span class="badge @UiHelpers.StatusBadge(e.Status)">@e.Status</span>
+                                @if (!string.IsNullOrEmpty(e.AdminNote)) { <small class="d-block text-muted">@e.AdminNote</small> }
+                            </td>
+                            <td class="text-end text-nowrap">
+                                @if (!e.HasAccess)
+                                {
+                                    <form asp-action="Approve" asp-route-id="@e.Id" asp-route-returnStatus="@status" method="post" class="inline-form">
+                                        <button type="submit" class="btn btn-sm btn-success" title="Approve"><i class="fa-solid fa-check"></i> Approve</button>
+                                    </form>
+                                }
+                                @if (e.Status == EnrollmentStatus.Pending)
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal" data-id="@e.Id" data-name="@e.Student.Name" title="Reject">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                }
+                                @if (e.HasAccess)
+                                {
+                                    <form asp-action="Cancel" asp-route-id="@e.Id" asp-route-returnStatus="@status" method="post" class="inline-form" data-confirm="Remove @e.Student.Name's access to this course?">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Remove access"><i class="fa-solid fa-ban"></i></button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="post" asp-action="Reject" asp-route-returnStatus="@status" id="rejectForm">
+            <div class="modal-header"><h5 class="modal-title">Reject enrollment</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p>Reject the request from <strong id="rejectName"></strong>?</p>
+                <label class="form-label" for="rejectNote">Reason (shown to the student)</label>
+                <input class="form-control" id="rejectNote" name="note" maxlength="500" placeholder="e.g. Transaction ID not found" />
+                <input type="hidden" name="id" id="rejectId" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-danger">Reject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('rejectModal').addEventListener('show.bs.modal', function (e) {
+            var btn = e.relatedTarget;
+            document.getElementById('rejectId').value = btn.getAttribute('data-id');
+            document.getElementById('rejectName').textContent = btn.getAttribute('data-name');
+        });
+    </script>
+}

@@ -1,0 +1,106 @@
+@model List<Batch>
+@{
+    ViewData["Title"] = "Batches";
+    int? courseId = ViewBag.CourseId;
+    var phase = ViewBag.Phase as BatchPhase?;
+    var phaseCounts = (Dictionary<BatchPhase, int>)ViewBag.PhaseCounts;
+    int total = ViewBag.Total;
+    string Link(BatchPhase? p) => "/Admin/Batch?" + (courseId != null ? "courseId=" + courseId + "&" : "") + (p != null ? "phase=" + p : "");
+}
+<div class="page-head">
+    <div>
+        <h2>Batches</h2>
+        <p>Each batch is one intake of a course with its own start date, class times, trainer and seats. Students choose a batch when they enroll.</p>
+    </div>
+    <a asp-action="Create" asp-route-courseId="@courseId" class="btn btn-brand"><i class="fa-solid fa-plus me-1"></i> New batch</a>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <ul class="nav nav-pills gap-1 mb-0">
+        <li class="nav-item"><a class="nav-link @(phase == null ? "active" : "")" href="@Link(null)">All <span class="badge bg-light text-dark ms-1">@total</span></a></li>
+        @foreach (var p in Enum.GetValues<BatchPhase>())
+        {
+            <li class="nav-item"><a class="nav-link @(phase == p ? "active" : "")" href="@Link(p)">@p <span class="badge bg-light text-dark ms-1">@phaseCounts.GetValueOrDefault(p)</span></a></li>
+        }
+    </ul>
+    <form method="get" class="d-flex gap-2">
+        @if (phase != null) { <input type="hidden" name="phase" value="@phase" /> }
+        <select name="courseId" asp-items="ViewBag.Courses" class="form-select form-select-sm" onchange="this.form.submit()" aria-label="Course">
+            <option value="">All courses</option>
+        </select>
+    </form>
+</div>
+
+<div class="card-lms">
+    <div class="card-lms-body">
+        @if (!Model.Any())
+        {
+            <div class="empty-state"><i class="fa-solid fa-people-group"></i>No batches here yet. Courses without batches work as before — students simply enroll in the course.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table datatable">
+                    <thead>
+                        <tr>
+                            <th>Batch</th>
+                            <th>Course</th>
+                            <th>Dates</th>
+                            <th>Schedule</th>
+                            <th>Trainer</th>
+                            <th>Students</th>
+                            <th>Admission</th>
+                            <th class="no-sort text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var b in Model)
+                        {
+                            var students = b.Enrollments.Count(e => e.HasAccess);
+                            var pending = b.Enrollments.Count(e => e.Status == EnrollmentStatus.Pending);
+                            var full = b.Seats > 0 && students + pending >= b.Seats;
+                            <tr>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@b.Id" class="fw-semibold">@b.Name</a>
+                                    <small class="d-block"><span class="badge @UiHelpers.BatchPhaseBadge(b.Phase)">@b.Phase</span></small>
+                                </td>
+                                <td>@b.Course.Title</td>
+                                <td class="text-nowrap" data-order="@b.StartDate.ToString("yyyyMMdd")">
+                                    @b.StartDate.ToString("dd MMM yyyy")
+                                    @if (b.EndDate != null) { <small class="d-block text-muted">to @b.EndDate.Value.ToString("dd MMM yyyy")</small> }
+                                </td>
+                                <td><small>@(b.Schedule ?? "—")</small></td>
+                                <td>
+                                    @(b.Teacher?.Name ?? b.Course.Teacher?.Name ?? "—")
+                                    @if (b.Teacher == null && b.Course.Teacher != null) { <small class="d-block text-muted">course teacher</small> }
+                                </td>
+                                <td data-order="@students">
+                                    <span class="fw-semibold">@students</span>@(b.Seats > 0 ? " / " + b.Seats : "")
+                                    @if (pending > 0) { <a href="/Admin/Enrollment?status=Pending&amp;courseId=@b.CourseId&amp;batchId=@b.Id" class="badge bg-warning text-dark text-decoration-none">@pending pending</a> }
+                                    @if (full) { <span class="badge bg-danger">Full</span> }
+                                </td>
+                                <td>
+                                    @if (b.AcceptsAdmission) { <span class="badge bg-success">Open</span> }
+                                    else { <span class="badge bg-secondary">Closed</span> }
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <a asp-action="Details" asp-route-id="@b.Id" class="btn btn-sm btn-outline-brand" title="Students"><i class="fa-solid fa-users"></i></a>
+                                    <a asp-action="Edit" asp-route-id="@b.Id" class="btn btn-sm btn-outline-primary" title="Edit"><i class="fa-solid fa-pen"></i></a>
+                                    <form asp-action="ToggleAdmission" asp-route-id="@b.Id" method="post" class="inline-form">
+                                        <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="@(b.IsAdmissionOpen ? "Close admission" : "Open admission")">
+                                            <i class="fa-solid @(b.IsAdmissionOpen ? "fa-lock" : "fa-lock-open")"></i>
+                                        </button>
+                                    </form>
+                                    <form asp-action="Delete" asp-route-id="@b.Id" method="post" class="inline-form" data-confirm="Delete @b.Name? Live classes, announcements and assignments made only for this batch are deleted too.">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,131 @@
+@model List<CourseStatRow>
+@{
+    ViewData["Title"] = "Reports";
+    var payments = (List<Enrollment>)ViewBag.Payments;
+    var batches = (List<BatchStatRow>)ViewBag.Batches;
+    var from = ViewBag.From as DateTime?;
+    var to = ViewBag.To as DateTime?;
+}
+<div class="page-head">
+    <div>
+        <h2>Reports</h2>
+        <p>Course performance and payment history.</p>
+    </div>
+    <button type="button" class="btn btn-outline-secondary no-print" onclick="window.print()"><i class="fa-solid fa-print me-1"></i> Print</button>
+</div>
+
+<div class="card-lms mb-4">
+    <div class="card-lms-header"><h5>Course performance</h5></div>
+    <div class="card-lms-body">
+        <div class="table-responsive">
+            <table class="table datatable">
+                <thead>
+                    <tr><th>Course</th><th>Teacher</th><th>Price</th><th>Learners</th><th>Completed</th><th>Pending</th><th>Avg. progress</th><th>Revenue</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="fw-semibold">@c.Title</span>
+                                @if (!c.IsPublished) { <span class="badge bg-secondary ms-1">Draft</span> }
+                            </td>
+                            <td>@(c.TeacherName ?? "—")</td>
+                            <td class="text-nowrap">@UiHelpers.Money(c.Price)</td>
+                            <td>@c.Enrolled</td>
+                            <td>@c.Completed <small class="text-muted">(@c.CompletionRate%)</small></td>
+                            <td>@c.Pending</td>
+                            <td style="min-width:120px" data-order="@c.AverageProgress">
+                                <div class="progress mb-1"><div class="progress-bar" style="width:@c.AverageProgress%"></div></div>
+                                <small class="text-muted">@c.AverageProgress%</small>
+                            </td>
+                            <td class="text-nowrap fw-semibold" data-order="@c.Revenue">@UiHelpers.Money(c.Revenue)</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td colspan="3">Total</td>
+                        <td>@Model.Sum(c => c.Enrolled)</td>
+                        <td>@Model.Sum(c => c.Completed)</td>
+                        <td>@Model.Sum(c => c.Pending)</td>
+                        <td></td>
+                        <td class="text-nowrap">@UiHelpers.Money(Model.Sum(c => c.Revenue))</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if (batches.Any())
+{
+    <div class="card-lms mb-4">
+        <div class="card-lms-header"><h5>Batch-wise summary</h5></div>
+        <div class="card-lms-body">
+            <div class="table-responsive">
+                <table class="table datatable">
+                    <thead>
+                        <tr><th>Batch</th><th>Course</th><th>Trainer</th><th>Starts</th><th>Learners</th><th>Completed</th><th>Pending</th><th>Avg. progress</th><th>Revenue</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var b in batches)
+                        {
+                            <tr>
+                                <td><a href="/Admin/Batch/Details/@b.BatchId" class="fw-semibold">@b.Name</a></td>
+                                <td>@b.CourseTitle</td>
+                                <td>@(b.TrainerName ?? "—")</td>
+                                <td class="text-nowrap" data-order="@b.StartDate.ToString("yyyyMMdd")">@b.StartDate.ToString("dd MMM yyyy")</td>
+                                <td>@b.Enrolled@(b.Seats > 0 ? " / " + b.Seats : "")</td>
+                                <td>@b.Completed <small class="text-muted">(@b.CompletionRate%)</small></td>
+                                <td>@b.Pending</td>
+                                <td style="min-width:120px" data-order="@b.AverageProgress">
+                                    <div class="progress mb-1"><div class="progress-bar" style="width:@b.AverageProgress%"></div></div>
+                                    <small class="text-muted">@b.AverageProgress%</small>
+                                </td>
+                                <td class="text-nowrap fw-semibold" data-order="@b.Revenue">@UiHelpers.Money(b.Revenue)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="card-lms">
+    <div class="card-lms-header flex-wrap">
+        <h5>Payments received</h5>
+        <form method="get" class="d-flex flex-wrap gap-2 align-items-center no-print">
+            <input type="date" name="from" value="@from?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" aria-label="From" />
+            <span class="text-muted small">to</span>
+            <input type="date" name="to" value="@to?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" aria-label="To" />
+            <button type="submit" class="btn btn-sm btn-brand">Filter</button>
+            @if (from != null || to != null) { <a href="/Admin/Report" class="btn btn-sm btn-light">Clear</a> }
+        </form>
+    </div>
+    <div class="card-lms-body">
+        <div class="table-responsive">
+            <table class="table datatable">
+                <thead><tr><th>Date</th><th>Student</th><th>Course</th><th>Method</th><th>TrxID</th><th>Amount</th></tr></thead>
+                <tbody>
+                    @foreach (var p in payments)
+                    {
+                        var date = p.ApprovedAt ?? p.EnrolledAt;
+                        <tr>
+                            <td class="text-nowrap" data-order="@date.Ticks">@date.ToString("dd MMM yyyy")</td>
+                            <td>@p.Student.Name <small class="text-muted">@p.Student.StudentID</small></td>
+                            <td>@p.Course.Title @if (p.Batch != null) { <small class="d-block text-muted">@p.Batch.Name</small> }</td>
+                            <td>@p.PaymentMethod</td>
+                            <td><code>@p.TransactionId</code></td>
+                            <td class="text-nowrap fw-semibold" data-order="@p.Amount">@UiHelpers.Money(p.Amount)</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold"><td colspan="5">Total (@payments.Count payments)</td><td class="text-nowrap">@UiHelpers.Money(payments.Sum(p => p.Amount))</td></tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

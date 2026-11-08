@@ -1,0 +1,91 @@
+@model List<Course>
+@{
+    ViewData["Title"] = "Courses";
+}
+<div class="page-head">
+    <div>
+        <h2>Manage courses</h2>
+        <p>Create courses, assign teachers, build the curriculum and publish them to the website.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-brand"><i class="fa-solid fa-plus me-1"></i> New course</a>
+</div>
+
+<div class="card-lms">
+    <div class="card-lms-body">
+        <div class="table-responsive">
+            <table class="table datatable">
+                <thead>
+                    <tr>
+                        <th class="no-sort"></th>
+                        <th>Course</th>
+                        <th>Teacher</th>
+                        <th>Price</th>
+                        <th>Lessons</th>
+                        <th>Students</th>
+                        <th>Batches</th>
+                        <th>Status</th>
+                        <th class="no-sort text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model)
+                    {
+                        var lessons = c.Sections.Sum(s => s.Lessons.Count);
+                        var pending = c.Enrollments.Count(e => e.Status == EnrollmentStatus.Pending);
+                        <tr>
+                            <td><img src="@UiHelpers.CourseImage(c.ThumbnailPath)" class="table-thumb" alt="" /></td>
+                            <td>
+                                <div class="fw-semibold">@c.Title</div>
+                                <small class="text-muted">@c.Coursecategory?.Title @(string.IsNullOrEmpty(c.Level) ? "" : "· " + c.Level)</small>
+                            </td>
+                            <td>@(c.Teacher?.Name ?? "—")</td>
+                            <td class="text-nowrap">@UiHelpers.Money(c.Price)</td>
+                            <td>@lessons</td>
+                            <td>
+                                @c.Enrollments.Count(e => e.HasAccess)
+                                @if (pending > 0)
+                                {
+                                    <a href="/Admin/Enrollment?status=Pending&amp;courseId=@c.Id" class="badge bg-warning text-dark text-decoration-none">@pending pending</a>
+                                }
+                            </td>
+                            <td>
+                                @if (c.Batches.Any())
+                                {
+                                    var open = c.Batches.Count(b => b.AcceptsAdmission);
+                                    <a href="/Admin/Batch?courseId=@c.Id">@c.Batches.Count</a>
+                                    @if (open > 0) { <small class="d-block text-success">@open open</small> }
+                                }
+                                else
+                                {
+                                    <a href="/Admin/Batch/Create?courseId=@c.Id" class="small text-muted">Add batch</a>
+                                }
+                            </td>
+                            <td>
+                                @if (c.IsPublished)
+                                {
+                                    <span class="badge bg-success">Published</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Draft</span>
+                                }
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <a href="/Teacher/Curriculum/Index/@c.Id" class="btn btn-sm btn-outline-brand" title="Curriculum"><i class="fa-solid fa-list-ol"></i> Content</a>
+                                <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary" title="Edit"><i class="fa-solid fa-pen"></i></a>
+                                <form asp-action="TogglePublish" asp-route-id="@c.Id" method="post" class="inline-form">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="@(c.IsPublished ? "Unpublish" : "Publish")">
+                                        <i class="fa-solid @(c.IsPublished ? "fa-eye-slash" : "fa-eye")"></i>
+                                    </button>
+                                </form>
+                                <form asp-action="Delete" asp-route-id="@c.Id" method="post" class="inline-form" data-confirm="Delete course '@c.Title' and all of its content?">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

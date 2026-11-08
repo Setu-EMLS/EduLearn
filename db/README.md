@@ -1,6 +1,6 @@
 # Database scripts
 
-SQL Server scripts that set up the PowerSoft IT LMS database without running the app.
+SQL Server scripts that set up the EduLearn LMS database without running the app.
 
 | File | What it does |
 |---|---|
@@ -8,7 +8,7 @@ SQL Server scripts that set up the PowerSoft IT LMS database without running the
 | `01_create_database.sql` | Creates the `EduLearn` database if it doesn't exist. |
 | `02_schema.sql` | Creates all tables. Generated from the EF Core migrations; safe to re-run (only missing migrations are applied). |
 | `03_seed_required.sql` | Roles (1 Admin, 2 Teacher, 3 Student), the first admin login and the payment methods. |
-| `04_demo_data.sql` | *Optional, testing only.* Demo teacher/student, two courses with lessons, an assignment, a quiz, a live class. Skips itself if any course exists. |
+| `04_demo_data.sql` | *Optional, testing only.* Demo teacher/student, two courses with lessons, two batches, an assignment, a quiz, a live class. Skips itself if any course exists. |
 
 Every script can be run more than once without creating duplicates.
 
@@ -21,9 +21,9 @@ Every script can be run more than once without creating duplicates.
    ```
 2. *(Optional)* Run `04_demo_data.sql` to get sample content.
 3. Point the app at the database in `EduLearn/appsettings.json` → `ConnectionStrings:DefaultConnection`.
-4. Log in as **admin@powersoftit.com / Admin@123** and change the password straight away (Account → Change Password).
+4. Log in as **admin@edulearn.com / Admin@123** and change the password straight away (Account → Change Password).
 
-Demo logins (only after step 2): `teacher@powersoftit.com / Teacher@123`, `student@powersoftit.com / Student@123`.
+Demo logins (only after step 2): `teacher@edulearn.com / Teacher@123`, `student@edulearn.com / Student@123`.
 
 ## Without the scripts
 
@@ -39,4 +39,4 @@ dotnet ef migrations script --idempotent -o ../db/02_schema.sql
 
 Then re-add the `USE [EduLearn];` header at the top of `02_schema.sql` and rebuild `EduLearn_full_install.sql` by joining files 01, 02 and 03.
 
-> The older `powersoftDb.sql` in the repository root only creates an empty database with paths for one specific machine. The scripts in this folder replace it.
+> The older `EduLearnDb.sql` in the repository root only creates an empty database with paths for one specific machine. The scripts in this folder replace it.

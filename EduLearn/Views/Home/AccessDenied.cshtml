@@ -1,0 +1,23 @@
+@{
+    ViewData["Title"] = "Access denied";
+    ViewData["HideCta"] = true;
+    ViewData["SolidHeader"] = true;
+}
+<section class="ps-section">
+    <div class="container" style="max-width:640px">
+        <div class="ps-card text-center p-5">
+            <span class="d-inline-flex align-items-center justify-content-center ic-pink rounded-circle mb-3" style="width:76px;height:76px;font-size:2rem"><i class="bi bi-shield-lock"></i></span>
+            <h1 class="h3 mb-2">Access denied</h1>
+            <p class="text-muted-ps mb-4">Your account doesn't have permission to open this page.</p>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a href="@User.DashboardUrl()" class="btn-ps me-2">Go to my dashboard</a>
+                <a href="/Home/Logout" class="btn-ps-outline">Log in as someone else</a>
+            }
+            else
+            {
+                <a href="/Login" class="btn-ps">Log in</a>
+            }
+        </div>
+    </div>
+</section>

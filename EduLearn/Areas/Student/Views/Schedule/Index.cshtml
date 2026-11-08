@@ -1,0 +1,81 @@
+@model List<LiveClass>
+@{
+    ViewData["Title"] = "Class Schedule";
+    var enrollments = (List<Enrollment>)ViewBag.Enrollments;
+    var now = DateTime.Now;
+    var upcoming = Model.Where(l => l.StartsAt.AddMinutes(l.DurationMinutes) >= now).ToList();
+    var past = Model.Where(l => l.StartsAt.AddMinutes(l.DurationMinutes) < now).OrderByDescending(l => l.StartsAt).ToList();
+}
+<div class="row g-3">
+    <div class="col-xl-8">
+        <div class="card-lms mb-3">
+            <div class="card-lms-header"><h5>Upcoming live classes</h5></div>
+            <div class="card-lms-body">
+                <ul class="list-clean">
+                    @foreach (var group in upcoming.GroupBy(l => l.StartsAt.Date))
+                    {
+                        <li class="pb-0 border-0"><div class="text-uppercase small fw-semibold text-brand">@(group.Key == DateTime.Today ? "Today" : group.Key == DateTime.Today.AddDays(1) ? "Tomorrow" : group.Key.ToString("dddd, dd MMMM"))</div></li>
+                        @foreach (var l in group)
+                        {
+                            var link = UiHelpers.SafeUrl(l.MeetingUrl);
+                            var live = now >= l.StartsAt;
+                            <li class="d-flex flex-wrap gap-3 align-items-start">
+                                <div class="text-center" style="width:72px">
+                                    <div class="fw-bold">@l.StartsAt.ToString("h:mm")</div>
+                                    <small class="text-muted">@l.StartsAt.ToString("tt") · @l.DurationMinutes m</small>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">@l.Title @if (live) { <span class="badge bg-danger">Live now</span> }</div>
+                                    <small class="text-muted">@l.Course.Title@(l.Batch != null ? " · " + l.Batch.Name : "")</small>
+                                    @if (!string.IsNullOrWhiteSpace(l.Notes)) { <div class="small player-article mt-1">@l.Notes</div> }
+                                </div>
+                                @if (link != null)
+                                {
+                                    <a href="@link" target="_blank" rel="noopener" class="btn btn-sm @(live ? "btn-danger" : "btn-outline-brand")"><i class="fa-solid fa-video me-1"></i>Join</a>
+                                }
+                            </li>
+                        }
+                    }
+                    @if (!upcoming.Any()) { <li class="empty-state"><i class="fa-regular fa-calendar"></i>No live classes scheduled right now.</li> }
+                </ul>
+            </div>
+        </div>
+        @if (past.Any())
+        {
+            <div class="card-lms">
+                <div class="card-lms-header"><h6>Recent classes</h6></div>
+                <div class="card-lms-body">
+                    <ul class="list-clean small">
+                        @foreach (var l in past)
+                        {
+                            <li class="d-flex justify-content-between"><span>@l.Title <span class="text-muted">· @l.Course.Title</span></span><span class="text-muted">@l.StartsAt.ToString("dd MMM, h:mm tt")</span></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-xl-4">
+        <div class="card-lms">
+            <div class="card-lms-header"><h6>My batches &amp; class times</h6></div>
+            <div class="card-lms-body">
+                <ul class="list-clean small">
+                    @foreach (var e in enrollments)
+                    {
+                        var schedule = e.Batch?.Schedule ?? e.Course.Schedule;
+                        <li>
+                            <div class="fw-semibold">@e.Course.Title</div>
+                            @if (e.Batch != null)
+                            {
+                                <div><i class="fa-solid fa-people-group me-1 text-brand"></i>@e.Batch.Name · starts @e.Batch.StartDate.ToString("dd MMM yyyy")@(e.Batch.EndDate != null ? ", ends " + e.Batch.EndDate.Value.ToString("dd MMM yyyy") : "")</div>
+                                @if (e.Batch.Teacher != null) { <div class="text-muted"><i class="fa-solid fa-person-chalkboard me-1"></i>@e.Batch.Teacher.Name</div> }
+                            }
+                            <span class="text-muted">@(string.IsNullOrEmpty(schedule) ? "Self-paced" : schedule)</span>
+                        </li>
+                    }
+                    @if (!enrollments.Any()) { <li class="text-muted">No courses yet.</li> }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

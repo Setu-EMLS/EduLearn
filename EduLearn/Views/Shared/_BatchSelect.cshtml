@@ -1,0 +1,16 @@
+@model EduLearn.Models.ViewModels.BatchSelectModel
+@* Hidden while the chosen course has no batches; dashboard.js does the filtering *@
+<div class="mb-3" data-batch-wrap>
+    <label class="form-label" for="@Model.Name">@Model.Label</label>
+    <select class="form-select" id="@Model.Name" name="@Model.Name" data-batch-for="@Model.CourseSelectId" @(Model.EmptyText == null ? "data-batch-required" : "")>
+        <option value="">@(Model.EmptyText ?? "— Select batch —")</option>
+        @foreach (var b in Model.Batches)
+        {
+            <option value="@b.Id" data-course="@b.CourseId" selected="@(b.Id == Model.Selected)">@b.Name · starts @b.StartDate.ToString("dd MMM yyyy")</option>
+        }
+    </select>
+    @if (!string.IsNullOrEmpty(Model.Hint))
+    {
+        <div class="form-text">@Model.Hint</div>
+    }
+</div>

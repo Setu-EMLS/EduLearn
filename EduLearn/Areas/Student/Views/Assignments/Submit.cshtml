@@ -1,0 +1,79 @@
+@model Assignment
+@{
+    ViewData["Title"] = Model.Title;
+    var sub = ViewBag.Submission as AssignmentSubmission;
+    var closed = Model.DueDate != null && DateTime.Now > Model.DueDate;
+    var canSubmit = !closed && sub?.Marks == null;
+}
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card-lms mb-3">
+            <div class="card-lms-body">
+                <small class="text-muted">@Model.Course.Title@(Model.Batch != null ? " · " + Model.Batch.Name : "")</small>
+                <h4>@Model.Title</h4>
+                <div class="d-flex flex-wrap gap-3 small text-muted mb-3">
+                    <span><i class="fa-regular fa-calendar me-1"></i>Due: @(Model.DueDate?.ToString("dd MMM yyyy, h:mm tt") ?? "No deadline")</span>
+                    <span><i class="fa-solid fa-star me-1"></i>@Model.MaxMarks marks</span>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.Instructions)) { <div class="player-article">@Model.Instructions</div> }
+                @if (!string.IsNullOrEmpty(Model.AttachmentPath))
+                {
+                    <a href="@Model.AttachmentPath" target="_blank" class="btn btn-sm btn-outline-brand mt-3"><i class="fa-solid fa-paperclip me-1"></i>Download attachment</a>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        @if (sub?.Marks != null)
+        {
+            <div class="card-lms mb-3 border-success">
+                <div class="card-lms-body text-center">
+                    <div class="text-muted small">Your grade</div>
+                    <div class="display-6 fw-bold text-success">@sub.Marks.Value.ToString("0.##") <small class="fs-5 text-muted">/ @Model.MaxMarks</small></div>
+                    @if (!string.IsNullOrEmpty(sub.Feedback))
+                    {
+                        <div class="text-start mt-3 p-3 bg-light rounded"><strong>Teacher feedback:</strong><div class="player-article">@sub.Feedback</div></div>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="card-lms">
+            <div class="card-lms-header">
+                <h5>Your submission</h5>
+                @if (sub != null) { <small class="text-muted">@sub.SubmittedAt.ToString("dd MMM, h:mm tt")</small> }
+            </div>
+            <div class="card-lms-body">
+                @if (canSubmit)
+                {
+                    <form asp-action="Submit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label" for="answer">Answer</label>
+                            <textarea class="form-control" id="answer" name="answer" rows="8" placeholder="Write your answer, or paste a link to your work (GitHub, Google Drive...)">@sub?.Answer</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="file">Attach a file <small class="text-muted fw-normal">(optional)</small></label>
+                            @if (!string.IsNullOrEmpty(sub?.FilePath))
+                            {
+                                <div class="small mb-1"><a href="@sub.FilePath" target="_blank"><i class="fa-solid fa-paperclip me-1"></i>Current file</a> — choose a new one to replace it</div>
+                            }
+                            <input type="file" class="form-control" id="file" name="file" />
+                            <small class="text-muted">PDF, Office, ZIP or images, up to 100 MB.</small>
+                        </div>
+                        <button type="submit" class="btn btn-brand w-100">@(sub == null ? "Submit assignment" : "Update submission")</button>
+                    </form>
+                }
+                else if (sub != null)
+                {
+                    @if (!string.IsNullOrWhiteSpace(sub.Answer)) { <div class="player-article border rounded p-3 bg-light small mb-2">@sub.Answer</div> }
+                    @if (!string.IsNullOrEmpty(sub.FilePath)) { <a href="@sub.FilePath" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-paperclip me-1"></i>Your file</a> }
+                    @if (sub.Marks == null) { <p class="text-muted small mt-2 mb-0">Waiting for your teacher to grade it.</p> }
+                }
+                else
+                {
+                    <div class="empty-state"><i class="fa-solid fa-lock"></i>The deadline has passed and no submission was made.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

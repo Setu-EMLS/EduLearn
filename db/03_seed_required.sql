@@ -1,9 +1,9 @@
 /* =====================================================================
-   PowerSoft IT LMS - 03: required data
+   EduLearn LMS - 03: required data
    Roles, the first admin login and the payment methods shown to students.
    Safe to run more than once: each block only inserts when its table is empty.
 
-   Default admin:  admin@powersoftit.com  /  Admin@123
+   Default admin:  admin@edulearn.com  /  Admin@123
    Change this password right after the first login (Account > Change Password).
    ===================================================================== */
 
@@ -26,9 +26,9 @@ GO
 IF NOT EXISTS (SELECT 1 FROM [Tbl_Users] WHERE [RoleId] = 1)
 BEGIN
     INSERT INTO [Tbl_Users] ([RoleId], [TenantId], [FullName], [MobileNo], [Email], [Password], [Salt], [IsActive], [CreatedAt])
-    VALUES (1, 0, N'Administrator', NULL, N'admin@powersoftit.com',
+    VALUES (1, 0, N'Administrator', NULL, N'admin@edulearn.com',
             N'PBKDF2$AW+zT2WJMksxaaGwuw9Fq7XWvBNJ5Lxf51pVBwdfTAU=', N'FgLc7+xwM6lnJRPvXskaAA==', 1, GETDATE());
-    PRINT 'Default admin admin@powersoftit.com added - change its password after logging in.';
+    PRINT 'Default admin admin@edulearn.com added - change its password after logging in.';
 END
 GO
 

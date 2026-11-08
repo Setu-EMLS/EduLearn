@@ -1,0 +1,99 @@
+@model Course
+@{
+    var levels = new[] { "Beginner", "Intermediate", "Advanced", "All levels" };
+}
+<div asp-validation-summary="ModelOnly" class="mb-3"></div>
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card-lms mb-3">
+            <div class="card-lms-header"><h6>Course details</h6></div>
+            <div class="card-lms-body">
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label"></label>
+                    <input asp-for="Title" class="form-control" placeholder="e.g. Professional Web Development" />
+                    <span asp-validation-for="Title"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="ShortDescription" class="form-label"></label>
+                    <input asp-for="ShortDescription" class="form-control" placeholder="One line shown on course cards" />
+                    <span asp-validation-for="ShortDescription"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Full description</label>
+                    <textarea asp-for="Description" class="form-control" rows="7" placeholder="What students will learn, requirements, outcomes..."></textarea>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="CategoryId" class="form-label"></label>
+                        <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select">
+                            <option value="0">— Select category —</option>
+                        </select>
+                        <span asp-validation-for="CategoryId"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="TeacherId" class="form-label"></label>
+                        <select asp-for="TeacherId" asp-items="ViewBag.Teachers" class="form-select">
+                            <option value="">— Not assigned —</option>
+                        </select>
+                        <span asp-validation-for="TeacherId"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card-lms mb-3">
+            <div class="card-lms-header"><h6>Pricing &amp; schedule</h6></div>
+            <div class="card-lms-body">
+                <div class="mb-3">
+                    <label asp-for="Price" class="form-label"></label>
+                    <input asp-for="Price" class="form-control" type="number" min="0" step="1" placeholder="0 for a free course" />
+                    <span asp-validation-for="Price"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Level" class="form-label"></label>
+                    <select asp-for="Level" class="form-select">
+                        <option value="">—</option>
+                        @foreach (var l in levels)
+                        {
+                            <option value="@l" selected="@(Model?.Level == l)">@l</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Duration" class="form-label"></label>
+                    <input asp-for="Duration" class="form-control" placeholder="e.g. 3 Months" />
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Schedule" class="form-label">Class schedule</label>
+                    <input asp-for="Schedule" class="form-control" placeholder="e.g. Sat, Mon 7.00 pm - 9.00 pm" />
+                    <div class="form-text">Courses with batches use each batch's own schedule.</div>
+                </div>
+                <div class="mb-0">
+                    <label asp-for="Seats" class="form-label"></label>
+                    <input asp-for="Seats" class="form-control" type="number" min="0" />
+                    <div class="form-text">For courses without batches. Each batch has its own seats.</div>
+                    <span asp-validation-for="Seats"></span>
+                </div>
+            </div>
+        </div>
+        <div class="card-lms mb-3">
+            <div class="card-lms-header"><h6>Thumbnail &amp; visibility</h6></div>
+            <div class="card-lms-body">
+                <img src="@UiHelpers.CourseImage(Model?.ThumbnailPath)" class="img-fluid rounded mb-2" alt="" id="thumbPreview" />
+                <input asp-for="Thumbnail" type="file" class="form-control mb-1" accept="image/*" />
+                <small class="text-muted d-block mb-3">JPG, PNG or WEBP, up to 5 MB. 16:9 looks best.</small>
+                <span asp-validation-for="Thumbnail"></span>
+                <div class="form-check form-switch">
+                    <input asp-for="IsPublished" class="form-check-input" role="switch" />
+                    <label asp-for="IsPublished" class="form-check-label">Published on website</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('Thumbnail')?.addEventListener('change', function () {
+        if (this.files && this.files[0]) document.getElementById('thumbPreview').src = URL.createObjectURL(this.files[0]);
+    });
+</script>
