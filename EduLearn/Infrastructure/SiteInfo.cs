@@ -14,9 +14,9 @@ namespace EduLearn.Infrastructure
 		public const string Phone2 = "+8801771511805";
 		public const string Phone2Display = "+880 1771-511805";
 
-		public const string Email = "info@powersoftit.com";
-		public const string SupportEmail = "support@powersoftit.com";
-		public const string HrEmail = "hr@powersoftit.com";
+		public const string Email = "info@edulearn.com";
+		public const string SupportEmail = "support@edulearn.com";
+		public const string HrEmail = "hr@edulearn.com";
 
 		public const string AddressLine1 = "567 (2nd floor), Near 285 no pillar, East Kazipara";
 		public const string AddressLine2 = "Kazipara, Mirpur, Dhaka-1216";

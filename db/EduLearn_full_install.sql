@@ -1807,7 +1807,7 @@ BEGIN
     VALUES (N'Bank Transfer', N'Deposit or transfer to the account below and enter the deposit slip / reference number.');
     SET @bank = SCOPE_IDENTITY();
     INSERT INTO [GetwayInfo] ([Name], [No], [Description], [Branch], [GetwayId])
-    VALUES (N'Sonali Bank - PowerSoftIT', N'4439602000928', NULL, N'Mirpur-10', @bank);
+    VALUES (N'Sonali Bank - EduLearn', N'4439602000928', NULL, N'Mirpur-10', @bank);
 
     PRINT 'Payment methods added.';
 END
