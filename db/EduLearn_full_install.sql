@@ -1,8 +1,8 @@
-/* PowerSoft IT LMS - full install in one file: 01_create_database + 02_schema + 03_seed_required.
+/* EduLearn LMS - full install in one file: 01_create_database + 02_schema + 03_seed_required.
    Run in SSMS (or sqlcmd) connected to your SQL Server. Demo data (04) is NOT included. */
 
 /* =====================================================================
-   PowerSoft IT LMS - 01: create the database
+   EduLearn LMS - 01: create the database
    Run this first, connected to the SQL Server instance (any database).
    The database files go to the server's default data folder.
    ===================================================================== */
@@ -17,7 +17,7 @@ ELSE
 GO
 
 /* =====================================================================
-   PowerSoft IT LMS - 02: database schema (all tables)
+   EduLearn LMS - 02: database schema (all tables)
    Generated from the Entity Framework Core migrations:
      dotnet ef migrations script --idempotent -o ../db/02_schema.sql
    Idempotent: safe to run on an empty database or one that already has
@@ -1616,11 +1616,11 @@ GO
 
 
 /* =====================================================================
-   PowerSoft IT LMS - 03: required data
+   EduLearn LMS - 03: required data
    Roles, the first admin login and the payment methods shown to students.
    Safe to run more than once: each block only inserts when its table is empty.
 
-   Default admin:  admin@powersoftit.com  /  Admin@123
+   Default admin:  admin@edulearn.com  /  Admin@123
    Change this password right after the first login (Account > Change Password).
    ===================================================================== */
 
@@ -1643,9 +1643,9 @@ GO
 IF NOT EXISTS (SELECT 1 FROM [Tbl_Users] WHERE [RoleId] = 1)
 BEGIN
     INSERT INTO [Tbl_Users] ([RoleId], [TenantId], [FullName], [MobileNo], [Email], [Password], [Salt], [IsActive], [CreatedAt])
-    VALUES (1, 0, N'Administrator', NULL, N'admin@powersoftit.com',
+    VALUES (1, 0, N'Administrator', NULL, N'admin@edulearn.com',
             N'PBKDF2$AW+zT2WJMksxaaGwuw9Fq7XWvBNJ5Lxf51pVBwdfTAU=', N'FgLc7+xwM6lnJRPvXskaAA==', 1, GETDATE());
-    PRINT 'Default admin admin@powersoftit.com added - change its password after logging in.';
+    PRINT 'Default admin admin@edulearn.com added - change its password after logging in.';
 END
 GO
 
@@ -1665,7 +1665,7 @@ BEGIN
     VALUES (N'Bank Transfer', N'Deposit or transfer to the account below and enter the deposit slip / reference number.');
     SET @bank = SCOPE_IDENTITY();
     INSERT INTO [GetwayInfo] ([Name], [No], [Description], [Branch], [GetwayId])
-    VALUES (N'Sonali Bank - PowerSoftIT', N'4439602000928', NULL, N'Mirpur-10', @bank);
+    VALUES (N'Sonali Bank - EduLearn', N'4439602000928', NULL, N'Mirpur-10', @bank);
 
     PRINT 'Payment methods added.';
 END

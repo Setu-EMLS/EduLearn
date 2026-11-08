@@ -1,9 +1,9 @@
 /* =====================================================================
-   PowerSoft IT LMS - 03: required data
+   EduLearn LMS - 03: required data
    Roles, the first admin login and the payment methods shown to students.
    Safe to run more than once: each block only inserts when its table is empty.
 
-   Default admin:  admin@powersoftit.com  /  Admin@123
+   Default admin:  admin@edulearn.com  /  Admin@123
    Change this password right after the first login (Account > Change Password).
    ===================================================================== */
 
@@ -26,9 +26,9 @@ GO
 IF NOT EXISTS (SELECT 1 FROM [Tbl_Users] WHERE [RoleId] = 1)
 BEGIN
     INSERT INTO [Tbl_Users] ([RoleId], [TenantId], [FullName], [MobileNo], [Email], [Password], [Salt], [IsActive], [CreatedAt])
-    VALUES (1, 0, N'Administrator', NULL, N'admin@powersoftit.com',
+    VALUES (1, 0, N'Administrator', NULL, N'admin@edulearn.com',
             N'PBKDF2$AW+zT2WJMksxaaGwuw9Fq7XWvBNJ5Lxf51pVBwdfTAU=', N'FgLc7+xwM6lnJRPvXskaAA==', 1, GETDATE());
-    PRINT 'Default admin admin@powersoftit.com added - change its password after logging in.';
+    PRINT 'Default admin admin@edulearn.com added - change its password after logging in.';
 END
 GO
 
@@ -41,14 +41,15 @@ BEGIN
     VALUES (N'bKash', N'Send Money / Payment to one of the numbers below, then enter the Transaction ID.');
     SET @bkash = SCOPE_IDENTITY();
     INSERT INTO [GetwayInfo] ([Name], [No], [Description], [Branch], [GetwayId])
-    VALUES (N'Merchant', N'01913168904', NULL, NULL, @bkash),
-           (N'Personal', N'01771511805', NULL, NULL, @bkash);
+    VALUES (N'Personal', N'01302481614', NULL, NULL, @bkash),
+           (N'Personal', N'01754617283', NULL, NULL, @bkash);
 
     INSERT INTO [PaymentGetways] ([Name], [Description])
     VALUES (N'Bank Transfer', N'Deposit or transfer to the account below and enter the deposit slip / reference number.');
     SET @bank = SCOPE_IDENTITY();
     INSERT INTO [GetwayInfo] ([Name], [No], [Description], [Branch], [GetwayId])
-    VALUES (N'Sonali Bank - PowerSoftIT', N'4439602000928', NULL, N'Mirpur-10', @bank);
+    VALUES (N'Eastern Bank PLC- EBL
+ - EduLearn', N'10412600454978', NULL, N'Gulshan-2', @bank);
 
     PRINT 'Payment methods added.';
 END

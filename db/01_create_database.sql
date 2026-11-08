@@ -1,5 +1,5 @@
 /* =====================================================================
-   PowerSoft IT LMS - 01: create the database
+   EduLearn LMS - 01: create the database
    Run this first, connected to the SQL Server instance (any database).
    The database files go to the server's default data folder.
    ===================================================================== */

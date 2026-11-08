@@ -54,20 +54,56 @@ namespace EduLearn.Infrastructure
 						Description = "Deposit or transfer to the account below and enter the deposit slip / reference number.",
 						GetwayInfo =
 						{
-							new GetwayInfo { Name = "Sonali Bank - PowerSoftIT", No = "4439602000928", Branch = "Mirpur-10" }
+							new GetwayInfo { Name = "Sonali Bank - EduLearn", No = "4439602000928", Branch = "Mirpur-10" }
 						}
 					});
 				await db.SaveChangesAsync();
 			}
 
-			if (config.GetValue<bool>("Seed:DemoData") && !await db.Courses.AnyAsync())
+			if (config.GetValue<bool>("Seed:DemoData"))
 			{
-				await SeedDemoDataAsync(db, accounts);
-				logger.LogInformation("Seeded LMS demo data.");
+				// Demo logins live in appsettings.json (Seed:Teachers / Seed:Students)
+				var teachers = config.GetSection("Seed:Teachers").Get<List<SeedUser>>() ?? new();
+				var students = config.GetSection("Seed:Students").Get<List<SeedUser>>() ?? new();
+
+				await SeedDemoUsersAsync(accounts, teachers, students, logger);
+
+				if (teachers.Count > 0 && students.Count > 0 && !await db.Courses.AnyAsync())
+				{
+					await SeedDemoDataAsync(db, teachers[0].Email, students[0].Email);
+					logger.LogInformation("Seeded LMS demo data.");
+				}
 			}
 		}
 
-		private static async Task SeedDemoDataAsync(ApplicationDbContext db, IAccountService accounts)
+		private sealed class SeedUser
+		{
+			public string Name { get; set; } = "";
+			public string Email { get; set; } = "";
+			public string? Phone { get; set; }
+			public string Password { get; set; } = "";
+			public string? Designation { get; set; }
+		}
+
+		// Skipped per user if the email already exists
+		private static async Task SeedDemoUsersAsync(IAccountService accounts, List<SeedUser> teachers, List<SeedUser> students, ILogger logger)
+		{
+			foreach (var t in teachers)
+			{
+				if (accounts.EmailExists(t.Email)) continue;
+				await accounts.CreateTeacherAsync(t.Name, t.Email, t.Phone, t.Password, t.Designation);
+				logger.LogInformation("Created demo teacher {Email}.", t.Email);
+			}
+
+			foreach (var s in students)
+			{
+				if (accounts.EmailExists(s.Email)) continue;
+				await accounts.CreateStudentAsync(s.Name, s.Email, s.Phone, s.Password);
+				logger.LogInformation("Created demo student {Email}.", s.Email);
+			}
+		}
+
+		private static async Task SeedDemoDataAsync(ApplicationDbContext db, string teacherEmail, string studentEmail)
 		{
 			var web = new CourseCategory { Title = "Web Development", Description = "Build modern websites and web applications." };
 			var database = new CourseCategory { Title = "Database", Description = "Design, query and manage databases." };
@@ -75,12 +111,8 @@ namespace EduLearn.Infrastructure
 			db.CourseCategorys.AddRange(web, database, software);
 			await db.SaveChangesAsync();
 
-			var teacher = accounts.EmailExists("teacher@edulearn.com")
-				? await db.Teachers.FirstAsync(t => t.Email == "teacher@edulearn.com")
-				: await accounts.CreateTeacherAsync("Demo Teacher", "teacher@edulearn.com", "01700000000", "Teacher@123", "Senior Instructor");
-			var student = accounts.EmailExists("student@edulearn.com")
-				? await db.Students.FirstAsync(s => s.Email == "student@edulearn.com")
-				: await accounts.CreateStudentAsync("Demo Student", "student@edulearn.com", "01800000000", "Student@123");
+			var teacher = await db.Teachers.FirstAsync(t => t.Email == teacherEmail);
+			var student = await db.Students.FirstAsync(s => s.Email == studentEmail);
 
 			var aspnet = new Course
 			{

@@ -1,5 +1,5 @@
 /* =====================================================================
-   PowerSoft IT LMS - 02: database schema (all tables)
+   EduLearn LMS - 02: database schema (all tables)
    Generated from the Entity Framework Core migrations:
      dotnet ef migrations script --idempotent -o ../db/02_schema.sql
    Idempotent: safe to run on an empty database or one that already has
