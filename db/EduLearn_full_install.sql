@@ -1753,6 +1753,88 @@ BEGIN
     VALUES (N'20261001115056_Batches', N'9.0.4');
 END;
 
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261108074732_LiveClassRecording'
+)
+BEGIN
+    ALTER TABLE [LiveClasses] ADD [RecordingAddedAt] datetime2 NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261108074732_LiveClassRecording'
+)
+BEGIN
+    ALTER TABLE [LiveClasses] ADD [RecordingPath] nvarchar(500) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261108074732_LiveClassRecording'
+)
+BEGIN
+    ALTER TABLE [LiveClasses] ADD [RecordingUrl] nvarchar(1000) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261108074732_LiveClassRecording'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261108074732_LiveClassRecording', N'9.0.4');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261108083802_CourseMode'
+)
+BEGIN
+    ALTER TABLE [Courses] ADD [Mode] int NOT NULL DEFAULT 0;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261108083802_CourseMode'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261108083802_CourseMode', N'9.0.4');
+END;
+
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261108085517_LiveClassTopics'
+)
+BEGIN
+    CREATE TABLE [LiveClassTopics] (
+        [LiveClassId] int NOT NULL,
+        [LessonId] int NOT NULL,
+        CONSTRAINT [PK_LiveClassTopics] PRIMARY KEY ([LiveClassId], [LessonId]),
+        CONSTRAINT [FK_LiveClassTopics_Lessons_LessonId] FOREIGN KEY ([LessonId]) REFERENCES [Lessons] ([Id]) ON DELETE CASCADE,
+        CONSTRAINT [FK_LiveClassTopics_LiveClasses_LiveClassId] FOREIGN KEY ([LiveClassId]) REFERENCES [LiveClasses] ([Id])
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261108085517_LiveClassTopics'
+)
+BEGIN
+    CREATE INDEX [IX_LiveClassTopics_LessonId] ON [LiveClassTopics] ([LessonId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261108085517_LiveClassTopics'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261108085517_LiveClassTopics', N'9.0.4');
+END;
+
 COMMIT;
 GO
 

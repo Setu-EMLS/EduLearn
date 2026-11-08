@@ -39,8 +39,9 @@
                 <div class="meta-row">
                     <span><i class="bi bi-person-video3"></i>@teacherName</span>
                     @if (!string.IsNullOrEmpty(Model.Level)) { <span><i class="bi bi-bar-chart"></i>@Model.Level</span> }
+                    @if (Model.IsOffline) { <span><i class="bi bi-building"></i>Offline course (classroom)</span> }
                     @if (!string.IsNullOrEmpty(Model.Duration)) { <span><i class="bi bi-calendar3"></i>@Model.Duration</span> }
-                    <span><i class="bi bi-play-circle"></i>@lessons.Count lessons @(minutes > 0 ? $"· {minutes / 60}h {minutes % 60}m" : "")</span>
+                    <span><i class="bi bi-list-check"></i>@Model.Sections.Count modules · @lessons.Count topics @(minutes > 0 ? $"· {minutes / 60}h {minutes % 60}m" : "")</span>
                     <span><i class="bi bi-patch-check"></i>Certificate included</span>
                 </div>
             </div>
@@ -101,7 +102,8 @@
                             <li><span><i class="bi bi-person-video3"></i>Trainer</span><span>@(nextBatch?.Teacher?.Name ?? teacherName)</span></li>
                             @if (!string.IsNullOrEmpty(schedule)) { <li><span><i class="bi bi-clock"></i>Schedule</span><span>@schedule</span></li> }
                             @if (!string.IsNullOrEmpty(Model.Duration)) { <li><span><i class="bi bi-calendar3"></i>Duration</span><span>@Model.Duration</span></li> }
-                            <li><span><i class="bi bi-collection-play"></i>Lessons</span><span>@lessons.Count</span></li>
+                            <li><span><i class="bi bi-collection-play"></i>Modules</span><span>@Model.Sections.Count</span></li>
+                            <li><span><i class="bi bi-list-check"></i>Topics</span><span>@lessons.Count</span></li>
                             @if (!string.IsNullOrEmpty(Model.Level)) { <li><span><i class="bi bi-bar-chart"></i>Level</span><span>@Model.Level</span></li> }
                             <li><span><i class="bi bi-translate"></i>Language</span><span>Bangla & English</span></li>
                         </ul>
@@ -163,7 +165,7 @@
                 <div class="content-card">
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                         <h3 class="mb-0">Curriculum</h3>
-                        <span class="text-muted-ps small">@Model.Sections.Count sections · @lessons.Count lessons @(minutes > 0 ? $"· {minutes / 60}h {minutes % 60}m total" : "")</span>
+                        <span class="text-muted-ps small">@Model.Sections.Count modules · @lessons.Count topics @(minutes > 0 ? $"· {minutes / 60}h {minutes % 60}m total" : "")</span>
                     </div>
                     @if (!Model.Sections.Any())
                     {
@@ -177,7 +179,7 @@
                                 <h2 class="accordion-header">
                                     <button class="accordion-button @(i == 0 ? "" : "collapsed")" type="button" data-bs-toggle="collapse" data-bs-target="#sec-@sec.Id" aria-expanded="@(i == 0 ? "true" : "false")">
                                         <span>@sec.Title</span>
-                                        <small>@sec.Lessons.Count lesson@(sec.Lessons.Count == 1 ? "" : "s")</small>
+                                        <small>@sec.Lessons.Count topic@(sec.Lessons.Count == 1 ? "" : "s")</small>
                                     </button>
                                 </h2>
                                 <div id="sec-@sec.Id" class="accordion-collapse collapse @(i == 0 ? "show" : "")" data-bs-parent="#curriculum">
@@ -187,7 +189,7 @@
                                             <i class="fa-solid @UiHelpers.LessonIcon(l.Type) type"></i>
                                             <span class="t">@l.Title</span>
                                             @if (l.IsPreview) { <a href="/Courses/Preview/@l.Id" class="preview"><i class="bi bi-eye me-1"></i>Preview</a> }
-                                            else { <i class="bi bi-lock text-muted-ps small"></i> }
+                                            else if (l.Type != LessonType.Topic) { <i class="bi bi-lock text-muted-ps small"></i> }
                                             @if (l.DurationMinutes > 0) { <span class="dur">@l.DurationMinutes min</span> }
                                         </div>
                                     }

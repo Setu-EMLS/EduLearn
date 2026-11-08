@@ -2,7 +2,9 @@
 @{
     ViewData["Title"] = Model.Course.Title;
     var lesson = Model.Current;
-    var isDone = lesson != null && Model.CompletedLessonIds.Contains(lesson.Id);
+    var isDone = lesson != null && Model.IsDone(lesson);
+    var isClassTopic = lesson?.Type == LessonType.Topic;
+    DateTime? coveredOn = lesson != null && Model.CoveredTopics.TryGetValue(lesson.Id, out var coveredDate) ? coveredDate : null;
     var embed = lesson?.Type == LessonType.Video ? UiHelpers.ToEmbedUrl(lesson.Url) : null;
     var directVideo = lesson?.Type == LessonType.Video
         ? (UiHelpers.IsDirectVideo(lesson.Url) ? UiHelpers.SafeUrl(lesson.Url) : UiHelpers.IsDirectVideo(lesson.AttachmentPath) ? lesson.AttachmentPath : null)
@@ -13,9 +15,10 @@
     <a href="/Student/Courses" class="btn btn-sm btn-light"><i class="fa-solid fa-arrow-left me-1"></i>My courses</a>
     <div class="flex-grow-1" style="min-width:200px;max-width:420px">
         <div class="d-flex justify-content-between small text-muted mb-1">
-            <span>Your progress</span><span>@Model.Progress.Completed / @Model.Progress.Total lessons · @Model.Progress.Percent%</span>
+            <span>Modules finished: <strong>@Model.ModulesFinished / @Model.Course.Sections.Count</strong></span>
+            @if (Model.Progress.Total > 0) { <span>@Model.Progress.Completed / @Model.Progress.Total topics · @Model.Progress.Percent%</span> }
         </div>
-        <div class="progress"><div class="progress-bar" style="width:@Model.Progress.Percent%"></div></div>
+        <div class="progress"><div class="progress-bar" style="width:@(Model.Course.Sections.Count == 0 ? 0 : Model.ModulesFinished * 100 / Model.Course.Sections.Count)%"></div></div>
     </div>
     @if (Model.Enrollment.Status == EnrollmentStatus.Completed)
     {
@@ -25,7 +28,7 @@
 
 @if (lesson == null)
 {
-    <div class="card-lms"><div class="empty-state"><i class="fa-solid fa-person-digging"></i>The teacher hasn't added any lessons yet. Check back soon!</div></div>
+    <div class="card-lms"><div class="empty-state"><i class="fa-solid fa-person-digging"></i>The teacher hasn't added any modules or topics yet. Check back soon!</div></div>
 }
 else
 {
@@ -48,11 +51,20 @@ else
                 <div class="card-lms-body">
                     <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
                         <div>
-                            <small class="text-muted"><i class="fa-solid @UiHelpers.LessonIcon(lesson.Type) me-1"></i>@lesson.Type @(lesson.DurationMinutes > 0 ? "· " + lesson.DurationMinutes + " min" : "")</small>
+                            <small class="text-muted"><i class="fa-solid @UiHelpers.LessonIcon(lesson.Type) me-1"></i>@(isClassTopic ? "Class topic" : lesson.Type.ToString()) @(lesson.DurationMinutes > 0 ? "· " + lesson.DurationMinutes + " min" : "")</small>
                             <h4 class="mb-0">@lesson.Title</h4>
                         </div>
-                        @if (isDone) { <span class="badge bg-success fs-6"><i class="fa-solid fa-check me-1"></i>Completed</span> }
+                        @if (isDone) { <span class="badge bg-success fs-6"><i class="fa-solid fa-check me-1"></i>@(isClassTopic ? "Covered in class" : "Completed")</span> }
                     </div>
+
+                    @if (isClassTopic)
+                    {
+                        <div class="alert alert-light border">
+                            <i class="fa-solid fa-chalkboard-user me-1 text-brand"></i>
+                            @if (coveredOn != null) { <text>This topic was covered in class on <strong>@coveredOn.Value.ToString("dd MMM yyyy")</strong>.</text> }
+                            else { <text>This topic is taught in class. It is ticked off here once a class that covers it has finished. See your <a href="/Student/Schedule">class schedule</a> to find out when.</text> }
+                        </div>
+                    }
 
                     @if (lesson.Type == LessonType.Video && embed == null && directVideo == null)
                     {
@@ -67,7 +79,7 @@ else
                     }
                     @if (!string.IsNullOrEmpty(lesson.AttachmentPath) && lesson.AttachmentPath != directVideo)
                     {
-                        <a href="@lesson.AttachmentPath" target="_blank" class="btn btn-outline-brand mb-3"><i class="fa-solid fa-file-arrow-down me-1"></i>Download lesson file</a>
+                        <a href="@lesson.AttachmentPath" target="_blank" class="btn btn-outline-brand mb-3"><i class="fa-solid fa-file-arrow-down me-1"></i>Download file</a>
                     }
                     @if (!string.IsNullOrWhiteSpace(lesson.Content))
                     {
@@ -81,7 +93,7 @@ else
                     }
                     else { <span></span> }
                     <div class="d-flex gap-2">
-                        @if (!isDone)
+                        @if (!isDone && !isClassTopic)
                         {
                             <form asp-action="Complete" method="post" class="inline-form">
                                 <input type="hidden" name="lessonId" value="@lesson.Id" />
@@ -102,14 +114,22 @@ else
                 <div class="card-lms-header"><h6 class="text-truncate">@Model.Course.Title</h6></div>
                 @foreach (var sec in Model.Course.Sections)
                 {
-                    <div class="cn-section">@sec.Title</div>
+                    var secDone = sec.Lessons.Count(Model.IsDone);
+                    var secFinished = sec.Lessons.Count > 0 && secDone == sec.Lessons.Count;
+                    <div class="cn-section d-flex justify-content-between align-items-center gap-2">
+                        <span>@sec.Title</span>
+                        <small class="text-nowrap @(secFinished ? "text-success" : "text-muted")">
+                            @if (secFinished) { <i class="fa-solid fa-circle-check me-1"></i><text>Finished</text> }
+                            else { <text>@secDone / @sec.Lessons.Count</text> }
+                        </small>
+                    </div>
                     @foreach (var l in sec.Lessons)
                     {
-                        var done = Model.CompletedLessonIds.Contains(l.Id);
+                        var done = Model.IsDone(l);
                         <a href="/Student/Learn/Index/@Model.Course.Id?lessonId=@l.Id" class="@(l.Id == lesson.Id ? "current" : "") @(done ? "done" : "")">
                             <i class="fa-solid @(done ? "fa-circle-check" : "fa-circle") state"></i>
                             <span class="flex-grow-1">@l.Title
-                                <small class="d-block text-muted"><i class="fa-solid @UiHelpers.LessonIcon(l.Type) me-1"></i>@l.Type @(l.DurationMinutes > 0 ? "· " + l.DurationMinutes + " min" : "")</small>
+                                <small class="d-block text-muted"><i class="fa-solid @UiHelpers.LessonIcon(l.Type) me-1"></i>@(l.Type == LessonType.Topic ? (done ? "Covered in class" : "Class topic") : l.Type.ToString()) @(l.DurationMinutes > 0 ? "· " + l.DurationMinutes + " min" : "")</small>
                             </span>
                         </a>
                     }

@@ -9,6 +9,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    @if (System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bn")
+    {
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    }
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/assets/vendor/bootstrap-icons/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/premium.css" asp-append-version="true" />
@@ -29,6 +33,7 @@
             </div>
         </aside>
         <main class="auth-main">
+            <div class="auth-lang"><partial name="_LanguageSwitcher" /></div>
             <a href="/" class="auth-mobile-logo" aria-label="EduLearn home"><partial name="_Logo" model="@("dark")" /></a>
             @RenderBody()
         </main>

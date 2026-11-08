@@ -28,6 +28,7 @@ namespace EduLearn.Areas.Student.Controllers
 		{
 			var enrollment = await MyEnrollments()
 				.Include(e => e.Student)
+				.Include(e => e.Batch).ThenInclude(b => b!.Teacher)
 				.Include(e => e.Course).ThenInclude(c => c.Teacher)
 				.FirstOrDefaultAsync(e => e.Id == id && e.Status == EnrollmentStatus.Completed);
 			if (enrollment == null) return NotFound();

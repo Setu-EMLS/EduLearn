@@ -36,10 +36,12 @@ namespace EduLearn.Areas.Student.Controllers
 				.Where(p => p.EnrollmentId == enrollment.Id)
 				.Select(p => p.LessonId)
 				.ToListAsync()).ToHashSet();
+			var covered = await _learning.GetCoveredTopicsAsync(id, enrollment.BatchId);
 
-			// Requested lesson, else the first one not finished yet, else the first lesson
+			// Requested topic, else the first one to study that isn't finished, else the first not done, else the first
 			var current = lessons.FirstOrDefault(l => l.Id == lessonId)
-				?? lessons.FirstOrDefault(l => !completed.Contains(l.Id))
+				?? lessons.FirstOrDefault(l => l.Type != LessonType.Topic && !completed.Contains(l.Id))
+				?? lessons.FirstOrDefault(l => l.Type == LessonType.Topic ? !covered.ContainsKey(l.Id) : !completed.Contains(l.Id))
 				?? lessons.FirstOrDefault();
 			var index = current == null ? -1 : lessons.IndexOf(current);
 
@@ -51,7 +53,11 @@ namespace EduLearn.Areas.Student.Controllers
 				Previous = index > 0 ? lessons[index - 1] : null,
 				Next = index >= 0 && index < lessons.Count - 1 ? lessons[index + 1] : null,
 				CompletedLessonIds = completed,
-				Progress = new CourseProgress(completed.Count(lessons.Select(l => l.Id).Contains), lessons.Count),
+				CoveredTopics = covered,
+				// Class topics are taught in class, so only the study topics count towards this progress bar
+				Progress = new CourseProgress(
+					lessons.Count(l => l.Type != LessonType.Topic && completed.Contains(l.Id)),
+					lessons.Count(l => l.Type != LessonType.Topic)),
 				QuizCount = await Db.Quizzes.CountAsync(q => q.CourseId == id && q.IsPublished),
 				AssignmentCount = await Db.Assignments.CountAsync(a => a.CourseId == id && (a.BatchId == null || a.BatchId == enrollment.BatchId))
 			};
@@ -67,6 +73,10 @@ namespace EduLearn.Areas.Student.Controllers
 			var courseId = lesson.Section.CourseId;
 			var enrollment = await AccessibleEnrollmentAsync(courseId);
 			if (enrollment == null) return RedirectToAction("Index", "Enroll", new { id = courseId });
+
+			// Class topics are ticked off by the classes that cover them, not by the student
+			if (lesson.Type == LessonType.Topic)
+				return RedirectToAction(nameof(Index), new { id = courseId, lessonId });
 
 			var wasCompleted = enrollment.Status == EnrollmentStatus.Completed;
 			await _learning.MarkLessonCompleteAsync(enrollment, lessonId);

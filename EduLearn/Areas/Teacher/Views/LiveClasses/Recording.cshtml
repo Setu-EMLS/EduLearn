@@ -1,0 +1,85 @@
+@model LiveClass
+@{
+    ViewData["Title"] = "Class Recording";
+    var embed = UiHelpers.ToEmbedUrl(Model.RecordingUrl);
+    var directLink = UiHelpers.IsDirectVideo(Model.RecordingUrl) ? UiHelpers.SafeUrl(Model.RecordingUrl) : null;
+}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-lms mb-3">
+            <div class="card-lms-header"><h5>Class recording</h5></div>
+            <div class="card-lms-body">
+                <div class="fw-semibold">@Model.Title</div>
+                <small class="text-muted">@Model.Course.Title@(Model.Batch != null ? " · " + Model.Batch.Name : "") · @Model.StartsAt.ToString("ddd, dd MMM yyyy, h:mm tt")</small>
+
+                @if (Model.HasRecording)
+                {
+                    <div class="mt-3">
+                        @if (!string.IsNullOrEmpty(Model.RecordingPath))
+                        {
+                            <video src="@Model.RecordingPath" controls preload="metadata" playsinline class="w-100 d-block rounded bg-dark"></video>
+                        }
+                        else if (embed != null)
+                        {
+                            <div class="ratio ratio-16x9"><iframe src="@embed" title="@Model.Title" allowfullscreen></iframe></div>
+                        }
+                        else if (directLink != null)
+                        {
+                            <video src="@directLink" controls preload="metadata" playsinline class="w-100 d-block rounded bg-dark"></video>
+                        }
+                        else
+                        {
+                            <a href="@UiHelpers.SafeUrl(Model.RecordingUrl)" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Open the recording link</a>
+                        }
+                        <div class="d-flex flex-wrap align-items-center gap-3 mt-2">
+                            <small class="text-muted">Added @Model.RecordingAddedAt?.ToString("dd MMM yyyy, h:mm tt")</small>
+                            <form asp-action="Recording" asp-route-id="@Model.Id" method="post" class="inline-form" data-confirm="Remove this recording? Students will no longer be able to watch it.">
+                                <input type="hidden" name="remove" value="true" />
+                                <button class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash me-1"></i>Remove recording</button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <form asp-action="Recording" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" class="card-lms" id="recordingForm">
+            <div class="card-lms-header"><h6>@(Model.HasRecording ? "Replace the recording" : "Add the recording")</h6></div>
+            <div class="card-lms-body">
+                <div asp-validation-summary="ModelOnly" class="mb-3"></div>
+                <div class="mb-3">
+                    <label for="file" class="form-label">Video file</label>
+                    <input type="file" id="file" name="file" class="form-control" accept=".mp4,.webm,.mov,.m4v,video/mp4,video/webm,video/quicktime" />
+                    <div class="form-text">MP4 is best (also WebM, MOV, M4V). Up to 1 GB. Large videos can take a few minutes to upload.</div>
+                    @Html.ValidationMessage("file", new { @class = "text-danger small" })
+                </div>
+                <div class="text-center text-muted small my-2">— or —</div>
+                <div class="mb-0">
+                    <label for="url" class="form-label">Link to the recording</label>
+                    <input type="url" id="url" name="url" class="form-control" placeholder="https://youtu.be/... or a Google Drive / Vimeo link" value="@(Context.Request.HasFormContentType ? Context.Request.Form["url"].ToString() : "")" />
+                    <div class="form-text">Use a link when the video is already on YouTube (unlisted), Vimeo or Google Drive.</div>
+                    @Html.ValidationMessage("url", new { @class = "text-danger small" })
+                </div>
+            </div>
+            <div class="card-lms-body border-top d-flex gap-2 align-items-center">
+                <button type="submit" class="btn btn-brand px-4" id="saveBtn"><i class="fa-solid fa-upload me-1"></i>Save recording</button>
+                <a asp-action="Index" class="btn btn-light">Back</a>
+                <span class="text-muted small d-none" id="uploadingNote"><span class="spinner-border spinner-border-sm me-1"></span>Uploading… please keep this page open.</span>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('recordingForm').addEventListener('submit', function () {
+            var hasFile = document.getElementById('file').files.length > 0;
+            var hasUrl = document.getElementById('url').value.trim() !== '';
+            if (!hasFile && !hasUrl) return;
+            var btn = document.getElementById('saveBtn');
+            // Disable after the submit has started so the form still posts
+            setTimeout(function () { btn.disabled = true; }, 0);
+            document.getElementById('uploadingNote').classList.remove('d-none');
+        });
+    </script>
+}

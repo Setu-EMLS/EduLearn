@@ -1,0 +1,62 @@
+{
+  // Public website and shared pieces: home page, course pages, error page, certificate.
+
+  // ---- home page
+  "Next session:": "পরবর্তী সেশন:",
+  "New courses are coming soon.": "নতুন কোর্স শীঘ্রই আসছে।",
+  "Join the free seminar to hear about them first.": "সবার আগে জানতে ফ্রি সেমিনারে যোগ দিন।",
+  "The course was amazing!": "কোর্সটি দারুণ ছিল!",
+  "The instructors were supportive, and I built real-world projects that helped me land a job.": "ইন্সট্রাক্টররা অনেক সহযোগিতা করেছেন, আর আমি বাস্তব প্রজেক্ট বানিয়েছি, যা চাকরি পেতে সাহায্য করেছে।",
+  "It was a game-changer for my career.": "এটি আমার ক্যারিয়ারে বড় পরিবর্তন এনেছে।",
+  "The hands-on experience and mentorship were exactly what I needed.": "হাতে-কলমে অভিজ্ঞতা ও মেন্টরশিপ ঠিক আমার যা দরকার ছিল তাই।",
+  "Great support and a modern curriculum.": "দারুণ সহায়তা এবং আধুনিক পাঠ্যক্রম।",
+  "I especially liked how they focused on practical skills.": "ব্যবহারিক দক্ষতার ওপর তাদের গুরুত্ব দেওয়াটা আমার বিশেষভাবে ভালো লেগেছে।",
+
+  // ---- the names in the sample testimonials
+  "Rahim Hossain": "রহিম হোসেন",
+  "Sadia Akter": "সাদিয়া আক্তার",
+  "Jarin Islam": "জারিন ইসলাম",
+  "Sadik Jahan": "সাদিক জাহান",
+  "Shahanaj Begum": "শাহানাজ বেগম",
+  "Mst.": "মোসাঃ",
+
+  // ---- courses
+  "Popular": "জনপ্রিয়",
+  "Mentor, EduLearn": "মেন্টর, EduLearn",
+  "Admission closed": "ভর্তি বন্ধ",
+  "This batch is full": "এই ব্যাচ পূর্ণ",
+  "Classes running": "ক্লাস চলছে",
+  "Waiting for payment verification": "পেমেন্ট যাচাইয়ের অপেক্ষায়",
+  "The curriculum is being prepared — check back soon.": "পাঠ্যক্রম তৈরি করা হচ্ছে — শীঘ্রই আবার দেখুন।",
+  "Our instructor profiles are coming soon.": "আমাদের ইন্সট্রাক্টরদের প্রোফাইল শীঘ্রই আসছে।",
+
+  // ---- lesson types on the free preview page ("Article lesson" is in common.json)
+  "Video lesson": "ভিডিও পাঠ",
+  "File lesson": "ফাইল পাঠ",
+  "Link lesson": "লিংক পাঠ",
+  "Topic lesson": "টপিক পাঠ",
+  "Topic": "টপিক",
+
+  // ---- announcements and access
+  "No announcements yet.": "এখনো কোনো ঘোষণা নেই।",
+  "Go to my dashboard": "আমার ড্যাশবোর্ডে যান",
+  "Log in as someone else": "অন্য অ্যাকাউন্টে লগইন করুন",
+
+  "Notify me about the next batch": "পরবর্তী ব্যাচের খবর আমাকে জানান",
+
+  // ---- certificate ("Name (Student ID X) completed Course" is split by the name and the course, so the verb goes in the first piece)
+  "(Student ID {0}) completed": "(স্টুডেন্ট আইডি {0}) এই কোর্সটি সম্পন্ন করেছেন:",
+  "Course Instructor": "কোর্স ইন্সট্রাক্টর",
+  "Certificate No. {0}": "সার্টিফিকেট নং {0}",
+
+  // ---- error page
+  "Something went wrong": "কিছু একটা সমস্যা হয়েছে",
+  "An error occurred while processing your request.": "আপনার অনুরোধ প্রক্রিয়া করার সময় একটি ত্রুটি ঘটেছে।",
+  "Please try again, or contact us if it keeps happening.": "অনুগ্রহ করে আবার চেষ্টা করুন, সমস্যা চলতে থাকলে আমাদের সাথে যোগাযোগ করুন।",
+  "Request ID:": "রিকোয়েস্ট আইডি:",
+  "Back to home": "হোমে ফিরে যান",
+  "Contact support": "সাপোর্টে যোগাযোগ করুন",
+
+  // ---- a lone full stop after a link or a bold date ends the Bangla sentence
+  ".": "।"
+}

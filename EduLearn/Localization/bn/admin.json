@@ -1,0 +1,41 @@
+{
+  // Admin area: dashboard, batches, payments, students, teachers, website messages.
+
+  // ---- dashboard
+  "No course has been completed yet.": "এখনো কোনো কোর্স সম্পন্ন হয়নি।",
+  "Certificates appear here as students finish their courses.": "শিক্ষার্থীরা কোর্স শেষ করলে সার্টিফিকেট এখানে দেখা যাবে।",
+  "No enrollments yet.": "এখনো কোনো ভর্তি নেই।",
+  "student": "জন শিক্ষার্থী",
+  "students": "জন শিক্ষার্থী",
+  "No teacher assigned": "কোনো শিক্ষক নির্ধারিত নেই",
+  "Create one": "একটি তৈরি করুন",
+
+  // ---- batches
+  "No batches here yet. Courses without batches work as before — students simply enroll in the course.": "এখানে এখনো কোনো ব্যাচ নেই। ব্যাচ ছাড়া কোর্স আগের মতোই চলে — শিক্ষার্থীরা সরাসরি কোর্সে ভর্তি হয়।",
+  "Not assigned": "নির্ধারিত নয়",
+  "No upcoming classes.": "আসন্ন কোনো ক্লাস নেই।",
+  "Every registered student already has access to this course.": "প্রতিটি নিবন্ধিত শিক্ষার্থীর এই কোর্সে ইতিমধ্যেই প্রবেশাধিকার আছে।",
+  "Register a new student to add more.": "আরও যোগ করতে একজন নতুন শিক্ষার্থী নিবন্ধন করুন।",
+  "Back to {0}": "{0}-এ ফিরে যান",
+
+  // ---- payment methods
+  "No payment methods yet. Add bKash, Nagad, Rocket or a bank account.": "এখনো কোনো পেমেন্ট মাধ্যম নেই। bKash, Nagad, Rocket বা ব্যাংক অ্যাকাউন্ট যোগ করুন।",
+  "No accounts yet — students won't know where to pay.": "এখনো কোনো অ্যাকাউন্ট নেই — শিক্ষার্থীরা কোথায় পেমেন্ট করবে জানতে পারবে না।",
+
+  // ---- students and teachers
+  "Activate": "সক্রিয় করুন",
+  "Inactive": "নিষ্ক্রিয়",
+  "No login": "লগইন নেই",
+  "Not enrolled in any course yet.": "এখনো কোনো কোর্সে ভর্তি হয়নি।",
+
+  // ---- website messages
+  "{#0} new": "{0}টি নতুন",
+  "Clear": "মুছুন",
+  "Handled": "নিষ্পন্ন",
+  "Mark as handled": "নিষ্পন্ন হিসেবে চিহ্নিত করুন",
+  "Mark as new": "নতুন হিসেবে চিহ্নিত করুন",
+  "Delete this message?": "এই বার্তাটি মুছবেন?",
+  "Course:": "কোর্স:",
+  "Free seminar registration": "ফ্রি সেমিনারে নিবন্ধন",
+  "Newsletter subscription": "নিউজলেটার সাবস্ক্রিপশন"
+}

@@ -58,7 +58,7 @@
                                 <small class="text-muted d-block">@e.Student.StudentID</small>
                             </td>
                             <td>
-                                @e.Course.Title
+                                @e.Course.Title @if (e.Course.IsOffline) { <span class="badge bg-dark">Offline</span> }
                                 @if (e.Batch != null) { <small class="d-block"><i class="fa-solid fa-people-group me-1 text-muted"></i><a href="/Admin/Batch/Details/@e.BatchId">@e.Batch.Name</a></small> }
                             </td>
                             <td class="text-nowrap">
@@ -74,7 +74,7 @@
                             </td>
                             <td class="text-nowrap" data-order="@e.EnrolledAt.Ticks">@e.EnrolledAt.ToString("dd MMM yyyy, h:mm tt")</td>
                             <td style="min-width:120px">
-                                @if (e.HasAccess)
+                                @if (e.HasAccess && p.Total > 0)
                                 {
                                     <div class="progress mb-1"><div class="progress-bar" style="width:@p.Percent%"></div></div>
                                     <small class="text-muted">@p.Percent%</small>
@@ -97,6 +97,21 @@
                                     <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal" data-id="@e.Id" data-name="@e.Student.Name" title="Reject">
                                         <i class="fa-solid fa-xmark"></i>
                                     </button>
+                                }
+                                @if (e.Status == EnrollmentStatus.Completed)
+                                {
+                                    <a asp-action="Certificate" asp-route-id="@e.Id" class="btn btn-sm btn-outline-brand" title="View / print certificate @e.CertificateNo"><i class="fa-solid fa-print"></i></a>
+                                    <form asp-action="RevokeCertificate" asp-route-id="@e.Id" method="post" class="inline-form" data-confirm="Revoke the certificate of @e.Student.Name?">
+                                        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Revoke certificate"><i class="fa-solid fa-rotate-left"></i></button>
+                                    </form>
+                                }
+                                else if (e.Status == EnrollmentStatus.Active)
+                                {
+                                    <form asp-action="IssueCertificate" asp-route-id="@e.Id" method="post" class="inline-form" data-confirm="Issue a completion certificate to @e.Student.Name?">
+                                        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Issue certificate"><i class="fa-solid fa-award"></i></button>
+                                    </form>
                                 }
                                 @if (e.HasAccess)
                                 {

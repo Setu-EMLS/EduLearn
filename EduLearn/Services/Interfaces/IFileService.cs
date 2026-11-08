@@ -3,7 +3,8 @@ namespace EduLearn.Services.Interfaces
 	public enum UploadKind
 	{
 		Image,
-		Document
+		Document,
+		Video
 	}
 
 	public record FileSaveResult(bool Success, string? Path, string? Error)

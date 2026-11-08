@@ -20,6 +20,14 @@ namespace EduLearn.Areas.Admin.Models
 		public List<Course> Courses { get; set; } = new List<Course>();
 	}
 
+	public enum CourseMode
+	{
+		[Display(Name = "Online (video lessons and live classes)")]
+		Online = 0,
+		[Display(Name = "Offline (classroom)")]
+		Offline = 1
+	}
+
 	public class Course
 	{
 		public int Id { get; set; }
@@ -74,6 +82,10 @@ namespace EduLearn.Areas.Admin.Models
 		[Display(Name = "Published")]
 		public bool IsPublished { get; set; }
 
+		// Offline courses are taught in a classroom: the office adds the students and issues the certificates
+		[Display(Name = "Course type")]
+		public CourseMode Mode { get; set; } = CourseMode.Online;
+
 		public DateTime CreatedAt { get; set; } = DateTime.Now;
 
 		[ValidateNever]
@@ -87,6 +99,9 @@ namespace EduLearn.Areas.Admin.Models
 
 		[NotMapped]
 		public bool IsFree => (Price ?? 0) <= 0;
+
+		[NotMapped]
+		public bool IsOffline => Mode == CourseMode.Offline;
 	}
 
 	public class BoosterCategories{

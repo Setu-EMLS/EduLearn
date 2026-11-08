@@ -17,8 +17,15 @@ namespace EduLearn.Services.Implementations
 			".zip", ".rar", ".7z", ".jpg", ".jpeg", ".png", ".mp4", ".mp3"
 		};
 
+		// Formats browsers can play directly in a <video> tag
+		private static readonly HashSet<string> VideoExtensions = new(StringComparer.OrdinalIgnoreCase)
+		{
+			".mp4", ".webm", ".mov", ".m4v"
+		};
+
 		private const long MaxImageBytes = 5 * 1024 * 1024;
 		private const long MaxDocumentBytes = 100 * 1024 * 1024;
+		public const long MaxVideoBytes = 1024L * 1024 * 1024;
 
 		private readonly IWebHostEnvironment _env;
 
@@ -33,8 +40,18 @@ namespace EduLearn.Services.Implementations
 				return FileSaveResult.Fail("The selected file is empty.");
 
 			var ext = Path.GetExtension(file.FileName);
-			var allowed = kind == UploadKind.Image ? ImageExtensions : DocumentExtensions;
-			var maxBytes = kind == UploadKind.Image ? MaxImageBytes : MaxDocumentBytes;
+			var allowed = kind switch
+			{
+				UploadKind.Image => ImageExtensions,
+				UploadKind.Video => VideoExtensions,
+				_ => DocumentExtensions
+			};
+			var maxBytes = kind switch
+			{
+				UploadKind.Image => MaxImageBytes,
+				UploadKind.Video => MaxVideoBytes,
+				_ => MaxDocumentBytes
+			};
 
 			if (string.IsNullOrEmpty(ext) || !allowed.Contains(ext))
 				return FileSaveResult.Fail($"File type {ext} is not allowed. Allowed: {string.Join(", ", allowed)}");

@@ -2,13 +2,13 @@
 @{
     var sec = (CourseSection)ViewBag.Section;
     var isNew = Model.Id == 0;
-    ViewData["Title"] = isNew ? "Add Lesson" : "Edit Lesson";
+    ViewData["Title"] = isNew ? "Add Topic" : "Edit Topic";
 }
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb mb-0">
         <li class="breadcrumb-item"><a href="/Teacher/Curriculum/Index/@sec.CourseId">@sec.Course.Title</a></li>
         <li class="breadcrumb-item">@sec.Title</li>
-        <li class="breadcrumb-item active">@(isNew ? "New lesson" : Model.Title)</li>
+        <li class="breadcrumb-item active">@(isNew ? "New topic" : Model.Title)</li>
     </ol>
 </nav>
 
@@ -25,14 +25,15 @@
                         <span asp-validation-for="Title"></span>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label d-block">Lesson type</label>
+                        <label class="form-label d-block">Topic type</label>
                         <div class="btn-group flex-wrap" role="group">
                             @foreach (var t in Enum.GetValues<LessonType>())
                             {
                                 <input type="radio" class="btn-check" name="Type" id="type-@t" value="@t" checked="@(Model.Type == t)" />
-                                <label class="btn btn-outline-brand" for="type-@t"><i class="fa-solid @UiHelpers.LessonIcon(t) me-1"></i>@t</label>
+                                <label class="btn btn-outline-brand" for="type-@t"><i class="fa-solid @UiHelpers.LessonIcon(t) me-1"></i>@(t == LessonType.Topic ? "Class topic" : t.ToString())</label>
                             }
                         </div>
+                        <small class="text-muted d-block mt-1" data-show-for="Topic">A class topic only needs a title: it is taught in class and ticked off when a class covering it has finished.</small>
                     </div>
                     <div class="mb-3" data-show-for="Video Link">
                         <label asp-for="Url" class="form-label"></label>
@@ -41,15 +42,15 @@
                         <span asp-validation-for="Url" class="d-block"></span>
                     </div>
                     <div class="mb-3">
-                        <label asp-for="Content" class="form-label"><span data-show-for="Article">Article</span><span data-show-for="Video Link File">Notes / description</span></label>
-                        <textarea asp-for="Content" class="form-control" rows="10" placeholder="Text shown to students with this lesson. Line breaks are kept."></textarea>
+                        <label asp-for="Content" class="form-label"><span data-show-for="Article">Article</span><span data-show-for="Video Link File Topic">Notes / description</span></label>
+                        <textarea asp-for="Content" class="form-control" rows="10" placeholder="Text shown to students with this topic. Line breaks are kept."></textarea>
                         <span asp-validation-for="Content"></span>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="card-lms mb-3">
+            <div class="card-lms mb-3" data-show-for="Video Article File Link">
                 <div class="card-lms-header"><h6>Attachment</h6></div>
                 <div class="card-lms-body">
                     @if (!string.IsNullOrEmpty(Model.AttachmentPath))
@@ -80,7 +81,7 @@
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-brand w-100 mb-2">@(isNew ? "Add lesson" : "Save lesson")</button>
+            <button type="submit" class="btn btn-brand w-100 mb-2">@(isNew ? "Add topic" : "Save topic")</button>
             <a href="/Teacher/Curriculum/Index/@sec.CourseId" class="btn btn-light w-100">Cancel</a>
         </div>
     </div>
@@ -88,7 +89,7 @@
 
 @section Scripts {
     <script>
-        // Show only the fields that matter for the chosen lesson type
+        // Show only the fields that matter for the chosen topic type
         function syncType() {
             var type = document.querySelector('input[name="Type"]:checked')?.value;
             document.querySelectorAll('[data-show-for]').forEach(function (el) {

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using EduLearn.Models;
 using EduLearn.Models.Lms;
+using EduLearn.Models.ViewModels;
 using EduLearn.Services.Interfaces;
 
 namespace EduLearn.Areas.Admin.Controllers
@@ -55,6 +56,17 @@ namespace EduLearn.Areas.Admin.Controllers
 			if (batch == null) return NotFound();
 
 			ViewBag.Progress = await _learning.GetProgressAsync(batch.Enrollments.Select(e => e.Id));
+
+			// Students who don't have access to this course yet (in any batch), for the "Add students" picker
+			var withAccess = await _context.Enrollments
+				.Where(e => e.CourseId == batch.CourseId && (e.Status == EnrollmentStatus.Active || e.Status == EnrollmentStatus.Completed))
+				.Select(e => e.StudentId)
+				.ToListAsync();
+			ViewBag.AvailableStudents = await _context.Students
+				.Where(s => !withAccess.Contains(s.Id))
+				.OrderBy(s => s.Name)
+				.Select(s => new StudentPick(s.Id, s.Name, s.StudentID, s.Contact))
+				.ToListAsync();
 			ViewBag.OtherBatches = await _context.Batches
 				.Where(b => b.CourseId == batch.CourseId && b.Id != id)
 				.OrderByDescending(b => b.StartDate)
@@ -168,7 +180,9 @@ namespace EduLearn.Areas.Admin.Controllers
 			// Live classes, announcements and assignments made only for this batch go with it
 			var assignments = await _context.Assignments.Include(a => a.Submissions).Where(a => a.BatchId == id).ToListAsync();
 			var files = assignments.SelectMany(a => a.Submissions.Select(s => s.FilePath).Append(a.AttachmentPath)).ToList();
+			files.AddRange(await _context.LiveClasses.Where(l => l.BatchId == id && l.RecordingPath != null).Select(l => l.RecordingPath).ToListAsync());
 			_context.Assignments.RemoveRange(assignments);
+			_context.LiveClassTopics.RemoveRange(_context.LiveClassTopics.Where(t => t.LiveClass.BatchId == id));
 			_context.LiveClasses.RemoveRange(_context.LiveClasses.Where(l => l.BatchId == id));
 			_context.Announcements.RemoveRange(_context.Announcements.Where(a => a.BatchId == id));
 			_context.Batches.Remove(batch);

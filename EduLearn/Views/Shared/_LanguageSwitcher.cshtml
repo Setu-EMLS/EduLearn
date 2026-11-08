@@ -1,0 +1,9 @@
+@* English / Bangla switch. translate="no": each language is always named in its own language. *@
+@{
+    var isBangla = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bn";
+    var back = Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString);
+}
+<div class="lang-switch" role="group" aria-label="Language / ভাষা" translate="no">
+    <a href="/Language/Set?culture=en&amp;returnUrl=@back" class="@(isBangla ? "" : "active")" lang="en" hreflang="en" aria-current="@(isBangla ? null : "true")" title="English"><span class="d-none d-sm-inline">English</span><span class="d-sm-none">EN</span></a>
+    <a href="/Language/Set?culture=bn&amp;returnUrl=@back" class="@(isBangla ? "active" : "")" lang="bn" hreflang="bn" aria-current="@(isBangla ? "true" : null)" title="বাংলা"><span class="d-none d-sm-inline">বাংলা</span><span class="d-sm-none">বাং</span></a>
+</div>

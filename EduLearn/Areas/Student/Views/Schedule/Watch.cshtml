@@ -1,0 +1,65 @@
+@model LiveClass
+@{
+    ViewData["Title"] = Model.Title;
+    var more = (List<LiveClass>)ViewBag.More;
+    var embed = UiHelpers.ToEmbedUrl(Model.RecordingUrl);
+    var directLink = UiHelpers.IsDirectVideo(Model.RecordingUrl) ? UiHelpers.SafeUrl(Model.RecordingUrl) : null;
+    var link = UiHelpers.SafeUrl(Model.RecordingUrl);
+}
+<div class="page-head">
+    <div>
+        <h2>@Model.Title</h2>
+        <p>@Model.Course.Title@(Model.Batch != null ? " · " + Model.Batch.Name : "") · @Model.StartsAt.ToString("dddd, dd MMMM yyyy, h:mm tt")</p>
+    </div>
+    <a href="/Student/Schedule" class="btn btn-light"><i class="fa-solid fa-arrow-left me-1"></i>Class schedule</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-xl-8">
+        <div class="card-lms">
+            <div class="card-lms-body">
+                @if (!string.IsNullOrEmpty(Model.RecordingPath))
+                {
+                    <video src="@Model.RecordingPath" controls controlsList="nodownload" preload="metadata" playsinline class="w-100 d-block rounded bg-dark"></video>
+                }
+                else if (embed != null)
+                {
+                    <div class="ratio ratio-16x9"><iframe src="@embed" title="@Model.Title" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+                }
+                else if (directLink != null)
+                {
+                    <video src="@directLink" controls controlsList="nodownload" preload="metadata" playsinline class="w-100 d-block rounded bg-dark"></video>
+                }
+                else if (link != null)
+                {
+                    <div class="text-center py-4">
+                        <p class="text-muted">This recording opens on another site.</p>
+                        <a href="@link" target="_blank" rel="noopener" class="btn btn-brand"><i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Open recording</a>
+                    </div>
+                }
+                <partial name="_ClassTopics" model="Model" />
+                @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                {
+                    <div class="small player-article mt-3">@Model.Notes</div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card-lms">
+            <div class="card-lms-header"><h6>More recordings from this course</h6></div>
+            <div class="card-lms-body">
+                <ul class="list-clean small">
+                    @foreach (var r in more)
+                    {
+                        <li>
+                            <a href="/Student/Schedule/Watch/@r.Id" class="fw-semibold">@r.Title</a>
+                            <div class="text-muted">@r.StartsAt.ToString("dd MMM yyyy, h:mm tt")@(r.Batch != null ? " · " + r.Batch.Name : "")</div>
+                        </li>
+                    }
+                    @if (!more.Any()) { <li class="text-muted">No other recordings yet.</li> }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

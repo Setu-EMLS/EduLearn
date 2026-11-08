@@ -11,12 +11,15 @@
     --border: #e6eaee;
     --radius: 14px;
     --sidebar-w: 250px;
+    /* Header row of every table (Admin, Teacher and Student panels). Change these two to restyle all tables at once. */
+    --table-head-bg: #0A2160;
+    --table-head-color: #ffffff;
 }
 
 body.dash-body {
     background-color: var(--bg);
     color: var(--text);
-    font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Noto Sans Bengali', 'Segoe UI', 'Nirmala UI', system-ui, -apple-system, sans-serif;
 }
 
 /* ============ Shell ============ */
@@ -186,7 +189,7 @@ a.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0
 .tone-violet { background: #f1ecfb; color: #6c4ab6; }
 
 .table > :not(caption) > * > * { padding: .7rem .75rem; vertical-align: middle; }
-.table thead th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; background: #fafbfc; }
+.table thead th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--table-head-color); font-weight: 600; background: var(--table-head-bg); border-bottom-color: var(--table-head-bg); }
 .table-thumb { width: 64px; height: 40px; object-fit: cover; border-radius: 6px; }
 .avatar-sm { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
 .avatar-lg { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--brand-soft); }
@@ -275,6 +278,8 @@ a.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0
     .dash-main { margin-left: 0; }
     .dash-content { padding: 0; }
     body.dash-body { background: #fff; }
+    /* Backgrounds are not printed by default: keep table headers readable on paper */
+    .table thead th { background: #fff !important; color: #000 !important; border-bottom: 2px solid #000 !important; }
 }
 
 /* ============ Legacy classes used by older views ============ */
@@ -324,3 +329,15 @@ a.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0
 .batch-filter [data-batch-wrap] { margin-bottom: 0 !important; }
 .batch-filter .form-label { display: none; }
 .batch-filter .form-select { padding-top: .25rem; padding-bottom: .25rem; font-size: .875rem; min-width: 180px; }
+
+/* ============ Language switch (English / Bangla) ============ */
+.lang-switch { display: inline-flex; align-items: center; padding: 2px; border: 1px solid var(--border); border-radius: 999px; background: #fff; line-height: 1; white-space: nowrap; }
+.lang-switch a { padding: .38rem .7rem; border-radius: 999px; font-size: .78rem; font-weight: 700; color: var(--muted); text-decoration: none; }
+.lang-switch a:hover { color: var(--text); background: #f1f4f8; }
+.lang-switch a.active { background: var(--brand); color: #fff; }
+
+/* ============ Bangla pages ============ */
+/* Bangla letters join into clusters: no tracking, and room for the tall marks */
+html[lang="bn"] body, html[lang="bn"] body * { letter-spacing: normal !important; }
+html[lang="bn"] body.dash-body { line-height: 1.7; }
+html[lang="bn"] .dash-body :is(h1, h2, h3, h4, h5, h6) { line-height: 1.4; }

@@ -68,7 +68,7 @@
                         <div class="meta"><i class="fa-solid fa-people-group me-1"></i>@e.Batch.Name@(string.IsNullOrEmpty(e.Batch.Schedule) ? "" : " · " + e.Batch.Schedule)</div>
                     }
                     <div class="mt-auto">
-                        <div class="d-flex justify-content-between small text-muted mb-1"><span>@p.Completed / @p.Total lessons</span><span>@p.Percent%</span></div>
+                        <div class="d-flex justify-content-between small text-muted mb-1"><span>@p.Completed / @p.Total topics</span><span>@p.Percent%</span></div>
                         <div class="progress mb-3"><div class="progress-bar" style="width:@p.Percent%"></div></div>
                         <div class="d-flex gap-2">
                             <a href="/Student/Learn/Index/@e.CourseId" class="btn btn-brand btn-sm flex-grow-1">@(p.Completed == 0 ? "Start course" : e.Status == EnrollmentStatus.Completed ? "Review course" : "Continue")</a>

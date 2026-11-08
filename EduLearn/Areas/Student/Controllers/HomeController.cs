@@ -57,6 +57,7 @@ namespace EduLearn.Areas.Student.Controllers
                 UpcomingClasses = await Db.LiveClasses.VisibleTo(scope)
                     .Include(l => l.Course)
                     .Include(l => l.Batch)
+                    .Include(l => l.Topics).ThenInclude(t => t.Lesson).ThenInclude(l => l.Section)
                     .Where(l => l.StartsAt.AddMinutes(l.DurationMinutes) >= now)
                     .OrderBy(l => l.StartsAt)
                     .Take(4)

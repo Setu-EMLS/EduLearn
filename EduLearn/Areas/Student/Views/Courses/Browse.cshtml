@@ -39,7 +39,7 @@
                     <p class="meta mb-0">@c.ShortDescription</p>
                     <div class="meta">
                         <i class="fa-solid fa-person-chalkboard me-1"></i>@(c.Teacher?.Name ?? "EduLearn")
-                        · @lessons lessons @(string.IsNullOrEmpty(c.Duration) ? "" : "· " + c.Duration)
+                        · @lessons topics @(string.IsNullOrEmpty(c.Duration) ? "" : "· " + c.Duration)
                     </div>
                     <div class="mt-auto pt-2 d-flex gap-2">
                         <a href="/Courses/Details/@c.Id" class="btn btn-sm btn-outline-secondary">Details</a>

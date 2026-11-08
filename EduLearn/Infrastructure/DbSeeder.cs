@@ -151,6 +151,17 @@ namespace EduLearn.Infrastructure
 							new Lesson { Title = "Razor views", Type = LessonType.Article, SortOrder = 2, DurationMinutes = 20,
 								Content = "Razor mixes C# and HTML. Use @Model to read the data passed from the controller." }
 						}
+					},
+					// Title-only topics taught in class; the orientation class below covers the first two
+					new CourseSection
+					{
+						Title = "Classroom topics", SortOrder = 3,
+						Lessons =
+						{
+							new Lesson { Title = "Setting up Visual Studio", Type = LessonType.Topic, SortOrder = 1 },
+							new Lesson { Title = "Your first MVC project", Type = LessonType.Topic, SortOrder = 2 },
+							new Lesson { Title = "Routing in depth", Type = LessonType.Topic, SortOrder = 3 }
+						}
 					}
 				}
 			};
@@ -238,13 +249,19 @@ namespace EduLearn.Infrastructure
 				CreatedByName = "Administrator"
 			});
 
+			var classTopics = aspnet.Sections.First(s => s.Title == "Classroom topics").Lessons.OrderBy(l => l.SortOrder).ToList();
 			db.LiveClasses.Add(new LiveClass
 			{
 				CourseId = aspnet.Id,
 				Title = "Orientation class",
 				StartsAt = DateTime.Now.Date.AddDays(2).AddHours(19),
 				DurationMinutes = 90,
-				MeetingUrl = "https://meet.google.com/"
+				MeetingUrl = "https://meet.google.com/",
+				Topics =
+				{
+					new LiveClassTopic { LessonId = classTopics[0].Id },
+					new LiveClassTopic { LessonId = classTopics[1].Id }
+				}
 			});
 
 			db.Enrollments.Add(new Enrollment

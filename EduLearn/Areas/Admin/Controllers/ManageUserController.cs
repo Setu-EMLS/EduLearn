@@ -34,7 +34,7 @@ namespace EduLearn.Areas.Admin.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Create(PersonFormViewModel model)
 		{
-			if (string.IsNullOrWhiteSpace(model.Password) || model.Password.Length < 6)
+			if ((string.IsNullOrWhiteSpace(model.Password) || model.Password.Length < 6) && ModelState[nameof(model.Password)]?.Errors.Count is null or 0)
 				ModelState.AddModelError(nameof(model.Password), "Password must be at least 6 characters long.");
 			if (ModelState.IsValid && _accounts.EmailExists(model.Email))
 				ModelState.AddModelError(nameof(model.Email), "This email is already used by another account.");

@@ -9,6 +9,8 @@ SQL Server scripts that set up the EduLearn LMS database without running the app
 | `02_schema.sql` | Creates all tables. Generated from the EF Core migrations; safe to re-run (only missing migrations are applied). |
 | `03_seed_required.sql` | Roles (1 Admin, 2 Teacher, 3 Student), the first admin login and the payment methods. |
 | `04_demo_data.sql` | *Optional, testing only.* Demo teacher/student, two courses with lessons, two batches, an assignment, a quiz, a live class. Skips itself if any course exists. |
+| `05_demo_students_and_enrollments.sql` | *Optional, testing only.* Adds 25 demo students and enrolls them so every course has 20 - 25 students (only open batches, seats respected, fee = course price). Run it after `04_demo_data.sql`. Set `@DryRun = 1` inside to preview without saving. |
+| `05_demo_students_and_enrollments_remove.sql` | Undo for the file above: removes those 25 students with their enrollments. |
 
 Every script can be run more than once without creating duplicates.
 
@@ -23,7 +25,7 @@ Every script can be run more than once without creating duplicates.
 3. Point the app at the database in `EduLearn/appsettings.json` → `ConnectionStrings:DefaultConnection`.
 4. Log in as **admin@edulearn.com / Admin@123** and change the password straight away (Account → Change Password).
 
-Demo logins (only after step 2): `teacher@edulearn.com / Teacher@123`, `student@edulearn.com / Student@123`.
+Demo logins (only after step 2): `teacher@edulearn.com / Teacher@123`, `student@edulearn.com / Student@123`. After `05_demo_students_and_enrollments.sql`: `student6@edulearn.com` … `student30@edulearn.com` / `Student@123`.
 
 ## Without the scripts
 

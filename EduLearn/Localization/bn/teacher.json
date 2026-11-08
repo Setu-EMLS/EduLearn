@@ -1,0 +1,70 @@
+{
+  // Teacher area: curriculum, live classes and recordings, quizzes, assignments.
+
+  // ---- curriculum
+  "Start by adding the first module, e.g.": "প্রথম মডিউল যোগ করে শুরু করুন, যেমন:",
+  "\"Introduction\".": "\"ভূমিকা\"।",
+  "Then add its topics.": "তারপর এতে টপিক যোগ করুন।",
+  "Draft — not visible on the website": "খসড়া — ওয়েবসাইটে দেখা যায় না",
+  "({#0} topic)": "({0}টি টপিক)",
+  "file": "ফাইল",
+  "Remove current file": "বর্তমান ফাইল সরান",
+
+  // ---- live classes and recordings
+  "No topics in this module yet.": "এই মডিউলে এখনো কোনো টপিক নেই।",
+  "Class Recording": "ক্লাসের রেকর্ডিং",
+  "Class recording": "ক্লাসের রেকর্ডিং",
+  "Add the recording": "রেকর্ডিং যোগ করুন",
+  "Replace the recording": "রেকর্ডিং বদলান",
+  "Added {0}": "যোগ করা হয়েছে {0}",
+  "Video file": "ভিডিও ফাইল",
+  "MP4 is best (also WebM, MOV, M4V).": "MP4 সবচেয়ে ভালো (WebM, MOV, M4V-ও চলবে)।",
+  "Up to 1 GB.": "সর্বোচ্চ 1 GB।",
+  "Large videos can take a few minutes to upload.": "বড় ভিডিও আপলোড হতে কয়েক মিনিট লাগতে পারে।",
+  "— or —": "— অথবা —",
+  "Link to the recording": "রেকর্ডিংয়ের লিংক",
+  "https://youtu.be/... or a Google Drive / Vimeo link": "https://youtu.be/... বা Google Drive / Vimeo-র লিংক",
+  "Use a link when the video is already on YouTube (unlisted), Vimeo or Google Drive.": "ভিডিও আগে থেকেই YouTube (আনলিস্টেড), Vimeo বা Google Drive-এ থাকলে লিংক ব্যবহার করুন।",
+  "Save recording": "রেকর্ডিং সংরক্ষণ করুন",
+  "Back": "ফিরে যান",
+  "Uploading… please keep this page open.": "আপলোড হচ্ছে… অনুগ্রহ করে এই পাতাটি খোলা রাখুন।",
+  "Open the recording link": "রেকর্ডিংয়ের লিংক খুলুন",
+  "Remove recording": "রেকর্ডিং সরান",
+  "Remove this recording?": "এই রেকর্ডিং সরাবেন?",
+  "Students will no longer be able to watch it.": "শিক্ষার্থীরা আর এটি দেখতে পারবে না।",
+  "View or replace the recording": "রেকর্ডিং দেখুন বা বদলান",
+  "{0} ({#1} min)": "{0} ({1} মিনিট)",
+
+  // ---- quizzes
+  "Draft — students can't see it": "খসড়া — শিক্ষার্থীরা এটি দেখতে পায় না",
+  "No questions yet. Add the first one.": "এখনো কোনো প্রশ্ন নেই। প্রথমটি যোগ করুন।",
+  "Clear attempts": "চেষ্টাগুলো মুছুন",
+  "{#0} attempt(s) recorded — questions are locked so past scores stay correct.": "{0}টি চেষ্টা রেকর্ড হয়েছে — আগের স্কোর ঠিক রাখতে প্রশ্নগুলো লক করা আছে।",
+  "Delete all {#0} attempts for this quiz? Students will lose these results.": "এই কুইজের সব {0}টি চেষ্টা মুছবেন? শিক্ষার্থীরা এই ফলাফল হারাবে।",
+  "Failed": "অনুত্তীর্ণ",
+  "None": "নেই",
+  "{#0}m {#1} s": "{0} মি. {1} সে.",
+  "{#0} attempt(s)": "{0}টি চেষ্টা",
+  "unlimited attempts": "সীমাহীন চেষ্টা",
+  "no time limit": "সময়সীমা নেই",
+  "Optional comments for the student": "শিক্ষার্থীর জন্য ঐচ্ছিক মন্তব্য",
+  "Question text is required.": "প্রশ্নের লেখা দেওয়া আবশ্যক।",
+  "Add at least two answer options.": "কমপক্ষে দুটি উত্তরের অপশন দিন।",
+  "Mark one of the filled options as the correct answer.": "পূরণ করা অপশনগুলোর একটিকে সঠিক উত্তর হিসেবে চিহ্নিত করুন।",
+  "Marks must be between 1 and 100.": "নম্বর অবশ্যই 1 থেকে 100-এর মধ্যে হতে হবে।",
+  "· avg {#0}%": "· গড় {0}%",
+  "Option {#0}": "অপশন {0}",
+
+  // ---- assignments
+  "Late": "দেরিতে",
+  "Open submitted file": "জমা দেওয়া ফাইল খুলুন",
+  "Submitted {0}": "জমা দিয়েছেন {0}",
+  "Grade": "নম্বর দিন",
+  "Update": "আপডেট",
+  "{#0} to grade": "{0}টি নম্বর দেওয়া বাকি",
+  "No students have access to this course yet.": "এই কোর্সে এখনো কোনো শিক্ষার্থীর প্রবেশাধিকার নেই।",
+
+  // ---- dashboard
+  "Your login is not linked to a teacher profile yet.": "আপনার লগইন এখনো কোনো শিক্ষক প্রোফাইলের সাথে যুক্ত নয়।",
+  "Please ask the admin to set it up.": "অনুগ্রহ করে অ্যাডমিনকে এটি ঠিক করে দিতে বলুন।"
+}

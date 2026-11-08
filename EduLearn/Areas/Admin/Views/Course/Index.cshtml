@@ -20,7 +20,7 @@
                         <th>Course</th>
                         <th>Teacher</th>
                         <th>Price</th>
-                        <th>Lessons</th>
+                        <th>Topics</th>
                         <th>Students</th>
                         <th>Batches</th>
                         <th>Status</th>
@@ -35,8 +35,8 @@
                         <tr>
                             <td><img src="@UiHelpers.CourseImage(c.ThumbnailPath)" class="table-thumb" alt="" /></td>
                             <td>
-                                <div class="fw-semibold">@c.Title</div>
-                                <small class="text-muted">@c.Coursecategory?.Title @(string.IsNullOrEmpty(c.Level) ? "" : "· " + c.Level)</small>
+                                <div class="fw-semibold">@c.Title @if (c.IsOffline) { <span class="badge bg-dark align-middle">Offline</span> }</div>
+                                <small class="text-muted">@c.Coursecategory?.Title @(string.IsNullOrEmpty(c.Level) ? "" : "· " + c.Level) @(string.IsNullOrEmpty(c.Duration) ? "" : "· " + c.Duration)</small>
                             </td>
                             <td>@(c.Teacher?.Name ?? "—")</td>
                             <td class="text-nowrap">@UiHelpers.Money(c.Price)</td>

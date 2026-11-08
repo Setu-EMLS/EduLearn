@@ -46,6 +46,11 @@
             <div class="card-lms-header"><h6>Pricing &amp; schedule</h6></div>
             <div class="card-lms-body">
                 <div class="mb-3">
+                    <label asp-for="Mode" class="form-label"></label>
+                    <select asp-for="Mode" asp-items="Html.GetEnumSelectList<CourseMode>()" class="form-select"></select>
+                    <div class="form-text">Offline courses are finished by the office: add students from the batch page and issue certificates yourself.</div>
+                </div>
+                <div class="mb-3">
                     <label asp-for="Price" class="form-label"></label>
                     <input asp-for="Price" class="form-control" type="number" min="0" step="1" placeholder="0 for a free course" />
                     <span asp-validation-for="Price"></span>
@@ -63,6 +68,7 @@
                 <div class="mb-3">
                     <label asp-for="Duration" class="form-label"></label>
                     <input asp-for="Duration" class="form-control" placeholder="e.g. 3 Months" />
+                    <div class="form-text">Total length of the course, e.g. "3 Months" or "48 hours". Shown on the course card and the course page.</div>
                 </div>
                 <div class="mb-3">
                     <label asp-for="Schedule" class="form-label">Class schedule</label>

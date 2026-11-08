@@ -27,6 +27,7 @@
                                 <div class="flex-grow-1">
                                     <div class="fw-semibold">@l.Title @if (live) { <span class="badge bg-danger">Live now</span> }</div>
                                     <small class="text-muted">@l.Course.Title@(l.Batch != null ? " · " + l.Batch.Name : "")</small>
+                                    <partial name="_ClassTopics" model="l" />
                                     @if (!string.IsNullOrWhiteSpace(l.Notes)) { <div class="small player-article mt-1">@l.Notes</div> }
                                 </div>
                                 @if (link != null)
@@ -40,6 +41,34 @@
                 </ul>
             </div>
         </div>
+        @{
+            var recordings = (List<LiveClass>)ViewBag.Recordings;
+        }
+        @if (recordings.Any())
+        {
+            <div class="card-lms mb-3">
+                <div class="card-lms-header"><h5>Class recordings</h5></div>
+                <div class="card-lms-body">
+                    <ul class="list-clean">
+                        @foreach (var group in recordings.GroupBy(r => r.Course.Title))
+                        {
+                            <li class="pb-0 border-0"><div class="text-uppercase small fw-semibold text-brand">@group.Key</div></li>
+                            @foreach (var r in group)
+                            {
+                                <li class="d-flex flex-wrap gap-3 align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold">@r.Title</div>
+                                        <small class="text-muted">@r.StartsAt.ToString("ddd, dd MMM yyyy, h:mm tt")@(r.Batch != null ? " · " + r.Batch.Name : "")</small>
+                                        <partial name="_ClassTopics" model="r" />
+                                    </div>
+                                    <a href="/Student/Schedule/Watch/@r.Id" class="btn btn-sm btn-brand"><i class="fa-solid fa-circle-play me-1"></i>Watch</a>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
         @if (past.Any())
         {
             <div class="card-lms">
@@ -48,7 +77,7 @@
                     <ul class="list-clean small">
                         @foreach (var l in past)
                         {
-                            <li class="d-flex justify-content-between"><span>@l.Title <span class="text-muted">· @l.Course.Title</span></span><span class="text-muted">@l.StartsAt.ToString("dd MMM, h:mm tt")</span></li>
+                            <li class="d-flex justify-content-between gap-2"><span>@l.Title <span class="text-muted">· @l.Course.Title</span>@if (l.HasRecording) { <a href="/Student/Schedule/Watch/@l.Id" class="ms-1"><i class="fa-solid fa-circle-play me-1"></i>Recording</a> }</span><span class="text-muted text-nowrap">@l.StartsAt.ToString("dd MMM, h:mm tt")</span></li>
                         }
                     </ul>
                 </div>

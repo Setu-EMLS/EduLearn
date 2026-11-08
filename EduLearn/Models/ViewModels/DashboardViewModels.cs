@@ -16,6 +16,8 @@ namespace EduLearn.Models.ViewModels
 		public decimal Revenue { get; set; }
 		public int NewInquiries { get; set; }
 		public List<Enrollment> RecentEnrollments { get; set; } = new();
+		/// <summary>The latest completed courses, newest first, with their certificates.</summary>
+		public List<Enrollment> RecentCertificates { get; set; } = new();
 		public List<CourseStatRow> TopCourses { get; set; } = new();
 	}
 
@@ -93,6 +95,14 @@ namespace EduLearn.Models.ViewModels
 		public EduLearn.Models.Lms.Lesson? Previous { get; set; }
 		public EduLearn.Models.Lms.Lesson? Next { get; set; }
 		public HashSet<int> CompletedLessonIds { get; set; } = new();
+		/// <summary>Class topics already taught in a finished class of this student's batch: topic id -> date.</summary>
+		public Dictionary<int, DateTime> CoveredTopics { get; set; } = new();
+
+		/// <summary>A topic is done when the student finished it, or - for a class topic - when a class covering it has finished.</summary>
+		public bool IsDone(EduLearn.Models.Lms.Lesson topic) =>
+			topic.Type == EduLearn.Models.Lms.LessonType.Topic ? CoveredTopics.ContainsKey(topic.Id) : CompletedLessonIds.Contains(topic.Id);
+
+		public int ModulesFinished => Course.Sections.Count(s => s.Lessons.Count > 0 && s.Lessons.All(IsDone));
 		public EduLearn.Services.Interfaces.CourseProgress Progress { get; set; } = new(0, 0);
 		public int QuizCount { get; set; }
 		public int AssignmentCount { get; set; }

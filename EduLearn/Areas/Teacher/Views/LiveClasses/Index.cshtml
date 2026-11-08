@@ -6,7 +6,7 @@
 <div class="page-head">
     <div>
         <h2>Live classes</h2>
-        <p>Schedule Zoom / Google Meet sessions. Students see them in their class schedule with a join link.</p>
+        <p>Schedule Zoom / Google Meet sessions. Students see them in their class schedule with a join link. After a class, upload its recording so students can watch it later.</p>
     </div>
     <a asp-action="Create" class="btn btn-brand"><i class="fa-solid fa-plus me-1"></i> Schedule class</a>
 </div>
@@ -15,7 +15,7 @@
     <div class="card-lms-body">
         <div class="table-responsive">
             <table class="table datatable">
-                <thead><tr><th>When</th><th>Class</th><th>Course</th><th>Link</th><th>Status</th><th class="no-sort text-end">Actions</th></tr></thead>
+                <thead><tr><th>When</th><th>Class</th><th>Course</th><th>Link</th><th>Status</th><th>Recording</th><th class="no-sort text-end">Actions</th></tr></thead>
                 <tbody>
                     @foreach (var l in Model)
                     {
@@ -23,13 +23,33 @@
                         var link = UiHelpers.SafeUrl(l.MeetingUrl);
                         <tr>
                             <td class="text-nowrap" data-order="@l.StartsAt.Ticks">@l.StartsAt.ToString("ddd, dd MMM yyyy")<small class="d-block text-muted">@l.StartsAt.ToString("h:mm tt") · @l.DurationMinutes min</small></td>
-                            <td class="fw-semibold">@l.Title</td>
+                            <td>
+                                <div class="fw-semibold">@l.Title</div>
+                                @foreach (var topic in l.Topics.OrderBy(t => t.Lesson.SortOrder))
+                                {
+                                    <span class="badge bg-light text-dark border fw-normal me-1">@topic.Lesson.Title</span>
+                                }
+                            </td>
                             <td>@l.Course.Title @if (l.Batch != null) { <small class="d-block text-muted"><i class="fa-solid fa-people-group me-1"></i>@l.Batch.Name</small> }</td>
                             <td>@if (link != null) { <a href="@link" target="_blank" rel="noopener">Open <i class="fa-solid fa-arrow-up-right-from-square small"></i></a> } else { <span class="text-muted">—</span> }</td>
                             <td>
                                 @if (now > ends) { <span class="badge bg-secondary">Finished</span> }
                                 else if (now >= l.StartsAt) { <span class="badge bg-danger">Live now</span> }
                                 else { <span class="badge bg-primary">Upcoming</span> }
+                            </td>
+                            <td class="text-nowrap">
+                                @if (l.HasRecording)
+                                {
+                                    <a asp-action="Recording" asp-route-id="@l.Id" class="badge bg-success text-decoration-none" title="View or replace the recording"><i class="fa-solid fa-circle-play me-1"></i>Uploaded</a>
+                                }
+                                else if (now > ends)
+                                {
+                                    <a asp-action="Recording" asp-route-id="@l.Id" class="btn btn-sm btn-brand"><i class="fa-solid fa-upload me-1"></i>Upload</a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">After the class</span>
+                                }
                             </td>
                             <td class="text-end text-nowrap">
                                 <a asp-action="Edit" asp-route-id="@l.Id" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i></a>

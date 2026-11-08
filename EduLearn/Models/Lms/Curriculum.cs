@@ -25,7 +25,9 @@ namespace EduLearn.Models.Lms
 		Video = 0,
 		Article = 1,
 		File = 2,
-		Link = 3
+		Link = 3,
+		// A syllabus entry with just a title, taught in the classroom (no video or article needed)
+		Topic = 4
 	}
 
 	public class Lesson
@@ -87,6 +89,31 @@ namespace EduLearn.Models.Lms
 		[Display(Name = "Meeting link")]
 		public string? MeetingUrl { get; set; }
 		public string? Notes { get; set; }
+
+		// Recording students can watch after the class: an uploaded file, or a link (YouTube, Vimeo, Google Drive...)
+		[ValidateNever, StringLength(500)]
+		public string? RecordingPath { get; set; }
+		[ValidateNever, StringLength(1000)]
+		public string? RecordingUrl { get; set; }
+		public DateTime? RecordingAddedAt { get; set; }
+
+		[NotMapped]
+		public bool HasRecording => !string.IsNullOrEmpty(RecordingPath) || !string.IsNullOrEmpty(RecordingUrl);
+
+		// The curriculum topics this class covers
+		[ValidateNever]
+		public List<LiveClassTopic> Topics { get; set; } = new List<LiveClassTopic>();
+	}
+
+	/// <summary>Links a live class to a topic (Lesson) of its course's curriculum.</summary>
+	public class LiveClassTopic
+	{
+		public int LiveClassId { get; set; }
+		[ValidateNever]
+		public LiveClass LiveClass { get; set; }
+		public int LessonId { get; set; }
+		[ValidateNever]
+		public Lesson Lesson { get; set; }
 	}
 
 	public class Announcement

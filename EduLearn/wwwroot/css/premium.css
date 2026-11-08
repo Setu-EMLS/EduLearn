@@ -29,7 +29,7 @@
     --ps-shadow: 0 18px 40px -18px rgba(10, 31, 78, .25);
     --ps-shadow-lg: 0 40px 80px -30px rgba(6, 20, 51, .5);
     --ps-header-h: 84px;
-    --ps-font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --ps-font: 'Plus Jakarta Sans', 'Noto Sans Bengali', system-ui, -apple-system, 'Segoe UI', 'Nirmala UI', Roboto, sans-serif;
     --ps-hero-bg:
         radial-gradient(55% 75% at 92% 30%, rgba(43, 127, 255, .55) 0%, transparent 60%),
         radial-gradient(40% 55% at 0% 100%, rgba(247, 115, 28, .18) 0%, transparent 60%),
@@ -854,3 +854,31 @@ body.ps-body {
 .verify-result i { font-size: 1.8rem; }
 .player-wrap { border-radius: var(--ps-radius-lg); overflow: hidden; box-shadow: var(--ps-shadow); background: #000; }
 .legal h2 { font-size: 1.3rem; margin-top: 32px; }
+
+/* ---------- Language switch (English / Bangla) ---------- */
+.lang-switch { display: inline-flex; align-items: center; padding: 3px; border: 1.5px solid rgba(255, 255, 255, .45); border-radius: 999px; line-height: 1; white-space: nowrap; }
+.ps-body .lang-switch a { padding: .4rem .8rem; border-radius: 999px; font-size: .8rem; font-weight: 700; color: rgba(255, 255, 255, .92); text-decoration: none; }
+.ps-body .lang-switch a:hover { background: rgba(255, 255, 255, .16); color: #fff; }
+.ps-body .lang-switch a.active { background: var(--ps-orange); color: #fff; }
+.ps-header.scrolled .lang-switch, .ps-header.solid .lang-switch { border-color: var(--ps-line); }
+.ps-body .ps-header.scrolled .lang-switch a, .ps-body .ps-header.solid .lang-switch a { color: var(--ps-ink); }
+.ps-body .ps-header.scrolled .lang-switch a:hover, .ps-body .ps-header.solid .lang-switch a:hover { background: var(--ps-bg-soft); color: var(--ps-orange); }
+.ps-body .ps-header.scrolled .lang-switch a.active, .ps-body .ps-header.solid .lang-switch a.active { background: var(--ps-orange); color: #fff; }
+@media (max-width: 1199.98px) {
+    .ps-header .navbar-collapse .lang-switch { border-color: var(--ps-line); }
+    .ps-body .ps-header .navbar-collapse .lang-switch a { color: var(--ps-ink); }
+    .ps-body .ps-header .navbar-collapse .lang-switch a:hover { background: var(--ps-bg-soft); color: var(--ps-orange); }
+    .ps-body .ps-header .navbar-collapse .lang-switch a.active { background: var(--ps-orange); color: #fff; }
+}
+.auth-main { position: relative; }
+.auth-lang { position: absolute; top: 18px; right: 22px; z-index: 5; }
+.auth-lang .lang-switch { border-color: var(--ps-line); background: #fff; }
+.ps-body .auth-lang .lang-switch a { color: var(--ps-ink); }
+.ps-body .auth-lang .lang-switch a:hover { background: var(--ps-bg-soft); color: var(--ps-orange); }
+.ps-body .auth-lang .lang-switch a.active { background: var(--ps-orange); color: #fff; }
+
+/* ---------- Bangla pages ---------- */
+/* Bangla letters join into clusters: no tracking (some headings use negative tracking) and room for the tall marks */
+html[lang="bn"] body, html[lang="bn"] body * { letter-spacing: normal !important; }
+html[lang="bn"] .ps-body :is(h1, h2, h3, h4, h5, h6) { line-height: 1.45; }
+html[lang="bn"] .ps-body { line-height: 1.8; }

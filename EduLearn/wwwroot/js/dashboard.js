@@ -6,6 +6,20 @@
         $('.dash-backdrop').toggleClass('show');
     });
 
+    // The labels DataTables writes itself ("Show 10 entries", "Search...", paging) in the page's language
+    var tableLanguage = document.documentElement.lang === 'bn'
+        ? {
+            search: '', searchPlaceholder: 'খুঁজুন...',
+            lengthMenu: '_MENU_টি করে দেখান',
+            info: '_TOTAL_টির মধ্যে _START_ থেকে _END_ পর্যন্ত',
+            infoEmpty: 'দেখানোর মতো কিছু নেই',
+            infoFiltered: '(মোট _MAX_টি থেকে ছাঁটাই করা)',
+            zeroRecords: 'কোনো মিল পাওয়া যায়নি',
+            emptyTable: 'কোনো তথ্য নেই',
+            paginate: { first: 'প্রথম', last: 'শেষ', next: 'পরবর্তী', previous: 'আগের' }
+        }
+        : { search: '', searchPlaceholder: 'Search...' };
+
     // Tables with class "datatable" get search / paging / sorting
     $('table.datatable').each(function () {
         var $t = $(this);
@@ -13,7 +27,7 @@
             pageLength: $t.data('page-length') || 10,
             order: [],
             columnDefs: [{ targets: 'no-sort', orderable: false }],
-            language: { search: '', searchPlaceholder: 'Search...' }
+            language: tableLanguage
         });
     });
 

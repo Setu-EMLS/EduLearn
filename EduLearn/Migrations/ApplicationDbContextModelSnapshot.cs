@@ -298,6 +298,9 @@ namespace EduLearn.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("Mode")
+                        .HasColumnType("int");
+
                     b.Property<decimal?>("Price")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -1406,6 +1409,17 @@ namespace EduLearn.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("RecordingAddedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RecordingPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RecordingUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<DateTime>("StartsAt")
                         .HasColumnType("datetime2");
 
@@ -1421,6 +1435,21 @@ namespace EduLearn.Migrations
                     b.HasIndex("CourseId");
 
                     b.ToTable("LiveClasses");
+                });
+
+            modelBuilder.Entity("EduLearn.Models.Lms.LiveClassTopic", b =>
+                {
+                    b.Property<int>("LiveClassId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LessonId")
+                        .HasColumnType("int");
+
+                    b.HasKey("LiveClassId", "LessonId");
+
+                    b.HasIndex("LessonId");
+
+                    b.ToTable("LiveClassTopics");
                 });
 
             modelBuilder.Entity("EduLearn.Models.Lms.Quiz", b =>
@@ -1999,6 +2028,25 @@ namespace EduLearn.Migrations
                     b.Navigation("Course");
                 });
 
+            modelBuilder.Entity("EduLearn.Models.Lms.LiveClassTopic", b =>
+                {
+                    b.HasOne("EduLearn.Models.Lms.Lesson", "Lesson")
+                        .WithMany()
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EduLearn.Models.Lms.LiveClass", "LiveClass")
+                        .WithMany("Topics")
+                        .HasForeignKey("LiveClassId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+
+                    b.Navigation("LiveClass");
+                });
+
             modelBuilder.Entity("EduLearn.Models.Lms.Quiz", b =>
                 {
                     b.HasOne("EduLearn.Areas.Admin.Models.Course", "Course")
@@ -2167,6 +2215,11 @@ namespace EduLearn.Migrations
             modelBuilder.Entity("EduLearn.Models.Lms.Enrollment", b =>
                 {
                     b.Navigation("LessonProgresses");
+                });
+
+            modelBuilder.Entity("EduLearn.Models.Lms.LiveClass", b =>
+                {
+                    b.Navigation("Topics");
                 });
 
             modelBuilder.Entity("EduLearn.Models.Lms.Quiz", b =>

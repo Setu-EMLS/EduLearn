@@ -23,7 +23,7 @@
             </div>
         </div>
 
-        <form asp-action="Submit" asp-route-id="@attempt.Id" method="post" id="quizForm">
+        <form asp-action="Submit" asp-route-id="@attempt.Id" method="post" id="quizForm" data-msg-unanswered="You answered {0} of {1} questions. Submit anyway?">
             @{ var n = 0; }
             @foreach (var q in Model.Questions)
             {
@@ -68,7 +68,8 @@
             form.addEventListener('submit', function (e) {
                 if (submitting) return;
                 var answered = countAnswered();
-                if (answered < total && !confirm('You answered ' + answered + ' of ' + total + ' questions. Submit anyway?')) {
+                var unanswered = form.getAttribute('data-msg-unanswered').replace('{0}', answered).replace('{1}', total);
+                if (answered < total && !confirm(unanswered)) {
                     e.preventDefault();
                     return;
                 }

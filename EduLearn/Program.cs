@@ -1,6 +1,9 @@
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EduLearn.Infrastructure;
+using EduLearn.Localization;
 using EduLearn.Models;
 using EduLearn.Services.Implementations;
 using EduLearn.Services.Interfaces;
@@ -13,9 +16,11 @@ namespace EduLearn
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddSingleton<ITranslator, Translator>();
             builder.Services.AddControllersWithViews(options =>
             {
                 options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+                options.Filters.Add<TranslateHtmlFilter>(); // translates the pages when the visitor chose Bangla
             });
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -54,6 +59,18 @@ namespace EduLearn
             app.UseHttpsRedirection();
             app.UseStaticFiles(); 
             app.UseRouting();
+
+            // English or Bangla, remembered in a cookie by /Language/Set (dates and numbers follow the language)
+            var languages = new[] { new CultureInfo("en-US"), new CultureInfo("bn-BD") };
+            var localization = new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("en-US"),
+                SupportedCultures = languages,
+                SupportedUICultures = languages
+            };
+            localization.RequestCultureProviders.Clear();
+            localization.RequestCultureProviders.Add(new CookieRequestCultureProvider { CookieName = Translator.CookieName });
+            app.UseRequestLocalization(localization);
 
             app.UseAuthentication(); 
             app.UseAuthorization();

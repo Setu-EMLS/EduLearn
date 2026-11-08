@@ -35,7 +35,7 @@ namespace EduLearn.Areas.Teacher.Controllers
 			return View(course);
 		}
 
-		//==================== Sections ====================//
+		//==================== Modules ====================//
 
 		[HttpPost]
 		public async Task<IActionResult> AddSection(int courseId, string title)
@@ -43,14 +43,14 @@ namespace EduLearn.Areas.Teacher.Controllers
 			if (!await CanManageCourseAsync(courseId)) return NotFound();
 			if (string.IsNullOrWhiteSpace(title))
 			{
-				TempData["Error"] = "Section title is required.";
+				TempData["Error"] = "Module title is required.";
 				return RedirectToAction(nameof(Index), new { id = courseId });
 			}
 
 			var next = (await Db.CourseSections.Where(s => s.CourseId == courseId).MaxAsync(s => (int?)s.SortOrder) ?? 0) + 1;
 			Db.CourseSections.Add(new CourseSection { CourseId = courseId, Title = title.Trim(), SortOrder = next });
 			await Db.SaveChangesAsync();
-			TempData["Success"] = "Section added.";
+			TempData["Success"] = "Module added.";
 			return RedirectToAction(nameof(Index), new { id = courseId });
 		}
 
@@ -64,7 +64,7 @@ namespace EduLearn.Areas.Teacher.Controllers
 			{
 				section.Title = title.Trim();
 				await Db.SaveChangesAsync();
-				TempData["Success"] = "Section renamed.";
+				TempData["Success"] = "Module renamed.";
 			}
 			return RedirectToAction(nameof(Index), new { id = section.CourseId });
 		}
@@ -81,7 +81,7 @@ namespace EduLearn.Areas.Teacher.Controllers
 			foreach (var f in files) _files.Delete(f);
 			await RefreshCompletionsAsync(section.CourseId);
 
-			TempData["Success"] = "Section and its lessons were deleted.";
+			TempData["Success"] = "Module and its topics were deleted.";
 			return RedirectToAction(nameof(Index), new { id = section.CourseId });
 		}
 
@@ -97,7 +97,7 @@ namespace EduLearn.Areas.Teacher.Controllers
 			return RedirectToAction(nameof(Index), new { id = section.CourseId });
 		}
 
-		//==================== Lessons ====================//
+		//==================== Topics ====================//
 
 		public async Task<IActionResult> CreateLesson(int sectionId)
 		{
@@ -138,7 +138,7 @@ namespace EduLearn.Areas.Teacher.Controllers
 			Db.Lessons.Add(lesson);
 			await Db.SaveChangesAsync();
 
-			TempData["Success"] = $"Lesson \"{lesson.Title}\" added.";
+			TempData["Success"] = $"Topic \"{lesson.Title}\" added.";
 			return RedirectToAction(nameof(Index), new { id = section.CourseId });
 		}
 
@@ -187,7 +187,7 @@ namespace EduLearn.Areas.Teacher.Controllers
 			}
 			await Db.SaveChangesAsync();
 
-			TempData["Success"] = "Lesson updated.";
+			TempData["Success"] = "Topic updated.";
 			return RedirectToAction(nameof(Index), new { id = lesson.Section.CourseId });
 		}
 
@@ -203,8 +203,36 @@ namespace EduLearn.Areas.Teacher.Controllers
 			_files.Delete(lesson.AttachmentPath);
 			await RefreshCompletionsAsync(courseId);
 
-			TempData["Success"] = "Lesson deleted.";
+			TempData["Success"] = "Topic deleted.";
 			return RedirectToAction(nameof(Index), new { id = courseId });
+		}
+
+		// Adds several class topics to a module at once: one topic per line, titles only
+		[HttpPost]
+		public async Task<IActionResult> AddTopics(int sectionId, string? titles)
+		{
+			var section = await Db.CourseSections.FirstOrDefaultAsync(s => s.Id == sectionId);
+			if (section == null || !await CanManageCourseAsync(section.CourseId)) return NotFound();
+
+			var lines = (titles ?? "").Split('\n')
+				.Select(t => t.Trim())
+				.Where(t => t.Length > 0)
+				.Select(t => t.Length > 200 ? t[..200] : t)
+				.Take(100)
+				.ToList();
+			if (lines.Count == 0)
+			{
+				TempData["Error"] = "Type at least one topic, one per line.";
+				return RedirectToAction(nameof(Index), new { id = section.CourseId });
+			}
+
+			var order = await Db.Lessons.Where(l => l.SectionId == sectionId).MaxAsync(l => (int?)l.SortOrder) ?? 0;
+			foreach (var title in lines)
+				Db.Lessons.Add(new Lesson { SectionId = sectionId, Title = title, Type = LessonType.Topic, SortOrder = ++order, CreatedAt = DateTime.Now });
+			await Db.SaveChangesAsync();
+
+			TempData["Success"] = lines.Count == 1 ? "Topic added." : $"{lines.Count} topics added.";
+			return RedirectToAction(nameof(Index), new { id = section.CourseId });
 		}
 
 		[HttpPost]
@@ -232,10 +260,10 @@ namespace EduLearn.Areas.Teacher.Controllers
 					ModelState.AddModelError(nameof(model.Url), "Add a video link (YouTube, Vimeo, Google Drive) or upload an .mp4 file.");
 					break;
 				case LessonType.Link when string.IsNullOrWhiteSpace(model.Url):
-					ModelState.AddModelError(nameof(model.Url), "A link lesson needs a URL.");
+					ModelState.AddModelError(nameof(model.Url), "A link topic needs a URL.");
 					break;
 				case LessonType.File when attachmentPath == null:
-					ModelState.AddModelError(nameof(model.Attachment), "Upload the file for this lesson.");
+					ModelState.AddModelError(nameof(model.Attachment), "Upload the file for this topic.");
 					break;
 				case LessonType.Article when string.IsNullOrWhiteSpace(model.Content):
 					ModelState.AddModelError(nameof(model.Content), "Write the article content.");
@@ -266,7 +294,7 @@ namespace EduLearn.Areas.Teacher.Controllers
 			for (var i = 0; i < items.Count; i++) setOrder(items[i], i + 1);
 		}
 
-		// Removing lessons can leave a student with every remaining lesson done
+		// Removing topics can leave a student with every remaining topic done
 		private async Task RefreshCompletionsAsync(int courseId)
 		{
 			var active = await Db.Enrollments.Where(e => e.CourseId == courseId && e.Status == EnrollmentStatus.Active).ToListAsync();

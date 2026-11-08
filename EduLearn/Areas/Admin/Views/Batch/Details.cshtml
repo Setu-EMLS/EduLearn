@@ -14,14 +14,17 @@
     var completed = roster.Count(e => e.Status == EnrollmentStatus.Completed);
     var trainer = Model.Teacher?.Name ?? Model.Course.Teacher?.Name;
     var here = Context.Request.Path.ToString();
+    var available = (List<StudentPick>)ViewBag.AvailableStudents;
+    var today = DateTime.Today.ToString("yyyy-MM-dd");
 }
 <div class="page-head">
     <div>
         <h2>@Model.Name <span class="badge @UiHelpers.BatchPhaseBadge(Model.Phase) align-middle fs-6">@Model.Phase</span></h2>
-        <p class="mb-0">@Model.Course.Title</p>
+        <p class="mb-0">@Model.Course.Title @if (Model.Course.IsOffline) { <span class="badge bg-dark align-middle">Offline</span> }</p>
     </div>
     <div class="d-flex flex-wrap gap-2 no-print">
-        <a href="/Admin/Enrollment/Create?courseId=@Model.CourseId&amp;batchId=@Model.Id" class="btn btn-brand"><i class="fa-solid fa-user-plus me-1"></i> Enroll a student</a>
+        <a href="#addStudents" class="btn btn-brand"><i class="fa-solid fa-users-line me-1"></i> Add students</a>
+        <a href="/Admin/Enrollment/Create?courseId=@Model.CourseId&amp;batchId=@Model.Id" class="btn btn-outline-brand"><i class="fa-solid fa-user-plus me-1"></i> Enroll one student</a>
         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary"><i class="fa-solid fa-pen me-1"></i> Edit</a>
         <button type="button" class="btn btn-light" onclick="window.print()"><i class="fa-solid fa-print me-1"></i> Print</button>
     </div>
@@ -88,6 +91,50 @@
     </div>
 </div>
 
+<div class="card-lms mb-3 no-print" id="addStudents">
+    <div class="card-lms-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h5 class="mb-0">Add students to this batch</h5>
+        <a href="/Admin/Student/Create" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-user-plus me-1"></i>Register a new student first</a>
+    </div>
+    <div class="card-lms-body">
+        @if (!available.Any())
+        {
+            <div class="text-muted">Every registered student already has access to this course. Register a new student to add more.</div>
+        }
+        else
+        {
+            <form asp-controller="Enrollment" asp-action="AddToBatch" method="post">
+                <input type="hidden" name="batchId" value="@Model.Id" />
+                <input type="hidden" name="returnUrl" value="@here" />
+                <div class="row g-3">
+                    <div class="col-lg-7">
+                        <input type="search" id="studentFilter" class="form-control form-control-sm mb-2" placeholder="Search by name, student ID or phone…" autocomplete="off" />
+                        <div class="border rounded p-2" style="max-height:260px;overflow:auto">
+                            @foreach (var s in available)
+                            {
+                                <div class="form-check student-pick" data-text="@((s.Name + " " + s.Code + " " + s.Contact).ToLowerInvariant())">
+                                    <input class="form-check-input" type="checkbox" name="studentIds" value="@s.Id" id="stu@(s.Id)" />
+                                    <label class="form-check-label" for="stu@(s.Id)">@s.Name <small class="text-muted">@s.Code@(string.IsNullOrEmpty(s.Contact) ? "" : " · " + s.Contact)</small></label>
+                                </div>
+                            }
+                        </div>
+                        <small class="text-muted"><span id="pickedCount">0</span> selected</small>
+                    </div>
+                    <div class="col-lg-5">
+                        <label class="form-label" for="addAmount">Amount per student (BDT)</label>
+                        <input type="number" min="0" step="1" name="amount" id="addAmount" class="form-control" value="@((Model.Course.Price ?? 0).ToString("0", System.Globalization.CultureInfo.InvariantCulture))" />
+                        <div class="form-text">Pre-filled with the course price. Use 0 for a free seat.</div>
+                        <label class="form-label mt-3" for="addMethod">Payment method</label>
+                        <input type="text" name="paymentMethod" id="addMethod" class="form-control" value="Cash (office)" maxlength="100" />
+                        <button type="submit" class="btn btn-brand mt-3"><i class="fa-solid fa-users-line me-1"></i>Add selected students</button>
+                        <div class="form-text">They get access to the course right away.</div>
+                    </div>
+                </div>
+            </form>
+        }
+    </div>
+</div>
+
 <div class="card-lms">
     <div class="card-lms-header"><h5>Students <span class="text-muted fw-normal">(@roster.Count)</span></h5></div>
     <div class="card-lms-body">
@@ -97,15 +144,26 @@
         }
         else
         {
+            <form id="bulkCertForm" asp-controller="Enrollment" asp-action="IssueCertificates" method="post" class="d-flex flex-wrap align-items-end gap-2 mb-3 no-print">
+                <input type="hidden" name="returnUrl" value="@here" />
+                <div>
+                    <label class="form-label small mb-1" for="completedOn">Completion date</label>
+                    <input type="date" id="completedOn" name="completedOn" class="form-control form-control-sm" value="@today" max="@today" />
+                </div>
+                <button type="submit" class="btn btn-sm btn-brand"><i class="fa-solid fa-award me-1"></i>Issue certificates to selected</button>
+                <span class="text-muted small">Tick the students in the table first.</span>
+            </form>
             <div class="table-responsive">
                 <table class="table align-middle">
                     <thead>
                         <tr>
+                            <th class="no-print"><input type="checkbox" class="form-check-input" id="checkAll" title="Select all" aria-label="Select all students" /></th>
                             <th>#</th>
                             <th>Student</th>
                             <th>Contact</th>
                             <th>Status</th>
                             <th>Progress</th>
+                            <th>Certificate</th>
                             <th>Payment</th>
                             @if (otherBatches.Any()) { <th class="no-print">Move to batch</th> }
                         </tr>
@@ -116,6 +174,7 @@
                             var e = roster[i];
                             var p = progress.GetValueOrDefault(e.Id, new CourseProgress(0, 0));
                             <tr>
+                                <td class="no-print">@if (e.HasAccess) { <input type="checkbox" class="form-check-input cert-check" name="ids" value="@e.Id" form="bulkCertForm" aria-label="Select @e.Student.Name" /> }</td>
                                 <td>@(i + 1)</td>
                                 <td>
                                     <a href="/Admin/Student/Details/@e.StudentId" class="fw-semibold">@e.Student.Name</a>
@@ -124,10 +183,32 @@
                                 <td><div>@e.Student.Contact</div><small class="text-muted">@e.Student.Email</small></td>
                                 <td><span class="badge @UiHelpers.StatusBadge(e.Status)">@e.Status</span></td>
                                 <td style="min-width:130px">
-                                    @if (e.HasAccess)
+                                    @if (e.HasAccess && p.Total > 0)
                                     {
                                         <div class="progress mb-1"><div class="progress-bar" style="width:@p.Percent%"></div></div>
                                         <small class="text-muted">@p.Completed / @p.Total (@p.Percent%)</small>
+                                    }
+                                    else { <span class="text-muted">—</span> }
+                                </td>
+                                <td class="text-nowrap">
+                                    @if (e.Status == EnrollmentStatus.Completed)
+                                    {
+                                        <code>@e.CertificateNo</code>
+                                        <small class="d-block text-muted">@e.CompletedAt?.ToString("dd MMM yyyy")</small>
+                                        <span class="d-flex gap-1 mt-1 no-print">
+                                            <a href="/Admin/Enrollment/Certificate/@e.Id" class="btn btn-sm btn-outline-brand" title="View / print certificate"><i class="fa-solid fa-print"></i></a>
+                                            <form asp-controller="Enrollment" asp-action="RevokeCertificate" asp-route-id="@e.Id" method="post" class="inline-form" data-confirm="Revoke the certificate of @e.Student.Name?">
+                                                <input type="hidden" name="returnUrl" value="@here" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Revoke certificate"><i class="fa-solid fa-rotate-left"></i></button>
+                                            </form>
+                                        </span>
+                                    }
+                                    else if (e.HasAccess)
+                                    {
+                                        <form asp-controller="Enrollment" asp-action="IssueCertificate" asp-route-id="@e.Id" method="post" class="inline-form no-print">
+                                            <input type="hidden" name="returnUrl" value="@here" />
+                                            <button type="submit" class="btn btn-sm btn-outline-success"><i class="fa-solid fa-award me-1"></i>Issue</button>
+                                        </form>
                                     }
                                     else { <span class="text-muted">—</span> }
                                 </td>
@@ -157,3 +238,26 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            // "Add students": search box + selected counter
+            var filter = document.getElementById('studentFilter');
+            var picks = document.querySelectorAll('.student-pick');
+            var counter = document.getElementById('pickedCount');
+            function count() { if (counter) counter.textContent = document.querySelectorAll('input[name="studentIds"]:checked').length; }
+            if (filter) filter.addEventListener('input', function () {
+                var q = filter.value.trim().toLowerCase();
+                picks.forEach(function (p) { p.style.display = !q || p.getAttribute('data-text').indexOf(q) !== -1 ? '' : 'none'; });
+            });
+            picks.forEach(function (p) { p.addEventListener('change', count); });
+
+            // Roster: select all for "Issue certificates to selected"
+            var all = document.getElementById('checkAll');
+            if (all) all.addEventListener('change', function () {
+                document.querySelectorAll('.cert-check').forEach(function (c) { c.checked = all.checked; });
+            });
+        })();
+    </script>
+}

@@ -1,0 +1,11 @@
+@model LiveClass
+@if (Model.Topics.Any())
+{
+    <div class="mt-1 small">
+        <span class="text-muted"><i class="fa-solid fa-list-check me-1"></i>Topics:</span>
+        @foreach (var topic in Model.Topics.OrderBy(t => t.Lesson.Section?.SortOrder ?? 0).ThenBy(t => t.Lesson.SortOrder))
+        {
+            <span class="badge bg-light text-dark border fw-normal">@topic.Lesson.Title</span>
+        }
+    </div>
+}

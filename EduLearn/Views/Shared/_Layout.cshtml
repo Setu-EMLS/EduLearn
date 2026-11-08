@@ -34,6 +34,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@600&display=swap" rel="stylesheet" />
+    @if (System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bn")
+    {
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    }
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/assets/vendor/bootstrap-icons/bootstrap-icons.min.css" />
@@ -64,6 +68,7 @@
                         <li class="nav-item"><a class="nav-link @Nav("ContactUs")" href="/ContactUs">Contact</a></li>
                     </ul>
                     <div class="d-flex align-items-center gap-2 ps-header-actions">
+                        <partial name="_LanguageSwitcher" />
                         <div class="search-wrap">
                             <button type="button" class="icon-btn search-toggle" aria-label="Search courses" aria-expanded="false" aria-controls="searchPop"><i class="bi bi-search"></i></button>
                             <div class="search-pop" id="searchPop">

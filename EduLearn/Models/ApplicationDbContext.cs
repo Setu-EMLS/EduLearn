@@ -99,6 +99,7 @@ namespace EduLearn.Models
 		public DbSet<QuizAnswer> QuizAnswers { get; set; }
 		public DbSet<Announcement> Announcements { get; set; }
 		public DbSet<LiveClass> LiveClasses { get; set; }
+		public DbSet<LiveClassTopic> LiveClassTopics { get; set; }
 		public DbSet<Batch> Batches { get; set; }
 
 		//=====================Website====================//
@@ -197,6 +198,16 @@ namespace EduLearn.Models
 			modelBuilder.Entity<LiveClass>()
 				.HasOne(l => l.Course).WithMany()
 				.HasForeignKey(l => l.CourseId).OnDelete(DeleteBehavior.Cascade);
+
+			// Topics a class covers. Deleting a topic removes its links; links of a deleted class are
+			// removed by the code (a second cascade path into this table isn't allowed by SQL Server).
+			modelBuilder.Entity<LiveClassTopic>().HasKey(t => new { t.LiveClassId, t.LessonId });
+			modelBuilder.Entity<LiveClassTopic>()
+				.HasOne(t => t.LiveClass).WithMany(l => l.Topics)
+				.HasForeignKey(t => t.LiveClassId).OnDelete(DeleteBehavior.ClientCascade);
+			modelBuilder.Entity<LiveClassTopic>()
+				.HasOne(t => t.Lesson).WithMany()
+				.HasForeignKey(t => t.LessonId).OnDelete(DeleteBehavior.Cascade);
 
 			// Batches: deleted with their course. Rows that point at a batch don't cascade from it
 			// (they already cascade from the course, and SQL Server rejects a second path);

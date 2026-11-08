@@ -2,6 +2,8 @@
 @{
     var isNew = Model.Id == 0;
     ViewData["Title"] = isNew ? "Schedule Live Class" : "Edit Live Class";
+    var modules = (List<CourseSection>)ViewBag.TopicModules;
+    var selectedTopics = (HashSet<int>)ViewBag.SelectedTopicIds;
 }
 <div class="row justify-content-center">
     <div class="col-lg-7">
@@ -40,9 +42,34 @@
                     <input asp-for="MeetingUrl" class="form-control" placeholder="https://meet.google.com/... or https://zoom.us/j/..." />
                     <span asp-validation-for="MeetingUrl"></span>
                 </div>
-                <div class="mb-0">
+                <div class="mb-3">
                     <label asp-for="Notes" class="form-label"></label>
                     <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Agenda, meeting passcode, things to prepare..."></textarea>
+                </div>
+                <div class="mb-0">
+                    <label class="form-label">Topics covered in this class</label>
+                    <div class="border rounded p-2" style="max-height:320px;overflow:auto">
+                        <div class="text-muted small" id="topicHint">Select a course to choose its topics.</div>
+                        @foreach (var course in modules.GroupBy(m => m.CourseId))
+                        {
+                            <div class="topic-course" data-course="@course.Key" style="display:none">
+                                @foreach (var m in course.OrderBy(m => m.SortOrder))
+                                {
+                                    <div class="fw-semibold small text-uppercase text-brand mt-2">@m.Title</div>
+                                    @foreach (var l in m.Lessons.OrderBy(l => l.SortOrder))
+                                    {
+                                        <div class="form-check">
+                                            <input class="form-check-input topic-check" type="checkbox" name="topicIds" value="@l.Id" id="topic-@l.Id" checked="@selectedTopics.Contains(l.Id)" />
+                                            <label class="form-check-label" for="topic-@l.Id">@l.Title</label>
+                                        </div>
+                                    }
+                                    @if (!m.Lessons.Any()) { <div class="text-muted small ms-1">No topics in this module yet.</div> }
+                                }
+                            </div>
+                        }
+                    </div>
+                    <div class="form-text">Students see these topics on their class schedule. Add modules and topics on the course's Curriculum page.</div>
+                    @Html.ValidationMessage("topicIds", new { @class = "text-danger small" })
                 </div>
             </div>
             <div class="card-lms-body border-top d-flex gap-2">
@@ -52,3 +79,27 @@
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var course = document.getElementById('CourseId');
+            var hint = document.getElementById('topicHint');
+            function sync() {
+                var id = course ? course.value : '0';
+                var shown = false;
+                document.querySelectorAll('.topic-course').forEach(function (g) {
+                    var match = g.getAttribute('data-course') === id;
+                    g.style.display = match ? '' : 'none';
+                    if (match) shown = true;
+                    // topics of other courses must not be submitted
+                    if (!match) g.querySelectorAll('.topic-check').forEach(function (c) { c.checked = false; });
+                });
+                hint.style.display = shown ? 'none' : '';
+                hint.textContent = (!id || id === '0') ? 'Select a course to choose its topics.' : 'This course has no modules or topics yet. Add them on its Curriculum page.';
+            }
+            if (course) course.addEventListener('change', sync);
+            sync();
+        })();
+    </script>
+}

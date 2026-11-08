@@ -39,6 +39,14 @@ namespace EduLearn.Areas.Admin.Controllers
 					.OrderByDescending(e => e.EnrolledAt)
 					.Take(8)
 					.ToListAsync(),
+				RecentCertificates = await _context.Enrollments
+					.Include(e => e.Student)
+					.Include(e => e.Course)
+					.Include(e => e.Batch)
+					.Where(e => e.Status == EnrollmentStatus.Completed)
+					.OrderByDescending(e => e.CompletedAt).ThenByDescending(e => e.Id)
+					.Take(8)
+					.ToListAsync(),
 				TopCourses = await _context.Courses
 					.Select(c => new CourseStatRow
 					{

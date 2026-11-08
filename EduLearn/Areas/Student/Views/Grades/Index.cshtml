@@ -11,7 +11,7 @@
 <div class="page-head">
     <div>
         <h2>Grades</h2>
-        <p>Your lesson progress, assignment marks and best quiz scores per course.</p>
+        <p>Your topic progress, assignment marks and best quiz scores per course.</p>
     </div>
     <button type="button" class="btn btn-outline-secondary no-print" onclick="window.print()"><i class="fa-solid fa-print me-1"></i>Print</button>
 </div>
@@ -28,7 +28,7 @@
             <h5>@e.Course.Title</h5>
             <div class="d-flex align-items-center gap-2" style="min-width:220px">
                 <div class="progress flex-grow-1"><div class="progress-bar" style="width:@p.Percent%"></div></div>
-                <small class="text-muted text-nowrap">@p.Percent% lessons</small>
+                <small class="text-muted text-nowrap">@p.Percent% topics</small>
                 @if (e.Status == EnrollmentStatus.Completed) { <span class="badge bg-success">Completed</span> }
             </div>
         </div>

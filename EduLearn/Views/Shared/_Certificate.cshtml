@@ -1,0 +1,33 @@
+@model Enrollment
+@{
+    var verifyUrl = $"{Context.Request.Scheme}://{Context.Request.Host}/Certificate/Verify/{Model.CertificateNo}";
+}
+<div class="certificate">
+    <div class="mb-4"><partial name="_Logo" model="@("dark")" /></div>
+    <h1>Certificate of Completion</h1>
+    <p class="text-muted text-uppercase small" style="letter-spacing:.15em">This is to certify that</p>
+    <div class="recipient">@Model.Student.Name</div>
+    <p class="mb-1">Student ID <strong>@Model.Student.StudentID</strong> has successfully completed the course</p>
+    <div class="course-name mb-4">@Model.Course.Title</div>
+    <p class="text-muted">Completed on @Model.CompletedAt?.ToString("dd MMMM yyyy")@(Model.Batch != null ? " · " + Model.Batch.Name : "")</p>
+
+    <div class="row mt-5 pt-3 text-center">
+        <div class="col-6">
+            <div style="border-top:1px solid #999;width:70%;margin:0 auto" class="pt-2">
+                <strong>@(Model.Batch?.Teacher?.Name ?? Model.Course.Teacher?.Name ?? "Course Instructor")</strong>
+                <div class="small text-muted">Instructor</div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div style="border-top:1px solid #999;width:70%;margin:0 auto" class="pt-2">
+                <strong>EduLearn</strong>
+                <div class="small text-muted">Authority</div>
+            </div>
+        </div>
+    </div>
+
+    <p class="small text-muted mt-5 mb-0">
+        Certificate No. <strong>@Model.CertificateNo</strong><br />
+        Verify at @verifyUrl
+    </p>
+</div>

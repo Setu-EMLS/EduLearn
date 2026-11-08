@@ -56,6 +56,7 @@ namespace EduLearn.Infrastructure
 			LessonType.Video => "fa-circle-play",
 			LessonType.Article => "fa-file-lines",
 			LessonType.File => "fa-file-arrow-down",
+			LessonType.Topic => "fa-chalkboard-user",
 			_ => "fa-link"
 		};
 

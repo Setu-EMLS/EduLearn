@@ -70,7 +70,7 @@ namespace EduLearn.Areas.Admin.Controllers
 			_context.Courses.Add(course);
 			await _context.SaveChangesAsync();
 
-			TempData["Success"] = "Course created. Now add sections and lessons to it.";
+			TempData["Success"] = "Course created. Now add modules and topics to it.";
 			return RedirectToAction("Index", "Curriculum", new { area = "Teacher", id = course.Id });
 		}
 
@@ -147,12 +147,13 @@ namespace EduLearn.Areas.Admin.Controllers
 			// Remove uploaded lesson / assignment files together with the course
 			var lessonFiles = await _context.Lessons.Where(l => l.Section.CourseId == id && l.AttachmentPath != null).Select(l => l.AttachmentPath).ToListAsync();
 			var assignmentFiles = await _context.Assignments.Where(a => a.CourseId == id && a.AttachmentPath != null).Select(a => a.AttachmentPath).ToListAsync();
+			var recordingFiles = await _context.LiveClasses.Where(l => l.CourseId == id && l.RecordingPath != null).Select(l => l.RecordingPath).ToListAsync();
 
 			_context.Courses.Remove(course);
 			await _context.SaveChangesAsync();
 
 			_files.Delete(course.ThumbnailPath);
-			foreach (var path in lessonFiles.Concat(assignmentFiles)) _files.Delete(path);
+			foreach (var path in lessonFiles.Concat(assignmentFiles).Concat(recordingFiles)) _files.Delete(path);
 
 			TempData["Success"] = "Course deleted successfully.";
 			return RedirectToAction(nameof(Index));
@@ -170,6 +171,7 @@ namespace EduLearn.Areas.Admin.Controllers
 			to.Duration = from.Duration;
 			to.Schedule = from.Schedule;
 			to.Seats = from.Seats;
+			to.Mode = from.Mode;
 			to.IsPublished = from.IsPublished;
 		}
 

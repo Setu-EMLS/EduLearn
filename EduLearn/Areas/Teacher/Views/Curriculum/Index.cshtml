@@ -1,7 +1,7 @@
 @model Course
 @{
     ViewData["Title"] = "Curriculum · " + Model.Title;
-    var totalLessons = Model.Sections.Sum(s => s.Lessons.Count);
+    var totalLessons = Model.Sections.Sum(s => s.Lessons.Count);   // topics
     var totalMinutes = Model.Sections.SelectMany(s => s.Lessons).Sum(l => l.DurationMinutes ?? 0);
 }
 <div class="card-lms mb-4">
@@ -11,7 +11,7 @@
             <h4 class="mb-1">@Model.Title</h4>
             <div class="text-muted small">
                 @Model.Coursecategory?.Title · Teacher: @(Model.Teacher?.Name ?? "not assigned") ·
-                @Model.Sections.Count sections · @totalLessons lessons @(totalMinutes > 0 ? $"· {totalMinutes / 60}h {totalMinutes % 60}m" : "")
+                @Model.Sections.Count modules · @totalLessons topics @(totalMinutes > 0 ? $"· {totalMinutes / 60}h {totalMinutes % 60}m" : "") @(string.IsNullOrEmpty(Model.Duration) ? "" : "· Course duration: " + Model.Duration)
             </div>
             <div class="mt-1">
                 @if (Model.IsPublished) { <span class="badge bg-success">Published</span> } else { <span class="badge bg-secondary">Draft — not visible on the website</span> }
@@ -33,7 +33,7 @@
     <div class="section-block">
         <div class="section-block-head">
             <i class="fa-solid fa-layer-group text-brand"></i>
-            <h6>@sec.Title <small class="text-muted fw-normal">(@sec.Lessons.Count lessons)</small></h6>
+            <h6>@sec.Title <small class="text-muted fw-normal">(@sec.Lessons.Count topic@(sec.Lessons.Count == 1 ? "" : "s"))</small></h6>
             <form asp-action="MoveSection" asp-route-id="@sec.Id" asp-route-direction="-1" method="post" class="inline-form">
                 <button class="btn btn-sm btn-light" title="Move up"><i class="fa-solid fa-arrow-up"></i></button>
             </form>
@@ -41,7 +41,7 @@
                 <button class="btn btn-sm btn-light" title="Move down"><i class="fa-solid fa-arrow-down"></i></button>
             </form>
             <button class="btn btn-sm btn-light" data-bs-toggle="collapse" data-bs-target="#rename-@sec.Id" title="Rename"><i class="fa-solid fa-pen"></i></button>
-            <form asp-action="DeleteSection" asp-route-id="@sec.Id" method="post" class="inline-form" data-confirm="Delete section '@sec.Title' and all its lessons?">
+            <form asp-action="DeleteSection" asp-route-id="@sec.Id" method="post" class="inline-form" data-confirm="Delete module '@sec.Title' and all its topics?">
                 <button class="btn btn-sm btn-light text-danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
             </form>
         </div>
@@ -59,7 +59,7 @@
                 <div class="lesson-title">
                     <div class="fw-semibold text-truncate">@lesson.Title</div>
                     <small class="text-muted">
-                        @lesson.Type
+                        @(lesson.Type == LessonType.Topic ? "Class topic" : lesson.Type.ToString())
                         @if (lesson.DurationMinutes > 0) { <text>· @lesson.DurationMinutes min</text> }
                         @if (lesson.AttachmentPath != null) { <text>· <i class="fa-solid fa-paperclip"></i> file</text> }
                         @if (lesson.IsPreview) { <span class="badge bg-info text-dark ms-1">Free preview</span> }
@@ -72,28 +72,35 @@
                     <button class="btn btn-sm btn-light" title="Move down"><i class="fa-solid fa-arrow-down"></i></button>
                 </form>
                 <a asp-action="EditLesson" asp-route-id="@lesson.Id" class="btn btn-sm btn-outline-primary" title="Edit"><i class="fa-solid fa-pen"></i></a>
-                <form asp-action="DeleteLesson" asp-route-id="@lesson.Id" method="post" class="inline-form" data-confirm="Delete lesson '@lesson.Title'?">
+                <form asp-action="DeleteLesson" asp-route-id="@lesson.Id" method="post" class="inline-form" data-confirm="Delete topic '@lesson.Title'?">
                     <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
                 </form>
             </div>
         }
         <div class="p-3">
-            <a asp-action="CreateLesson" asp-route-sectionId="@sec.Id" class="btn btn-sm btn-outline-brand"><i class="fa-solid fa-plus me-1"></i>Add lesson</a>
+            <a asp-action="CreateLesson" asp-route-sectionId="@sec.Id" class="btn btn-sm btn-outline-brand"><i class="fa-solid fa-plus me-1"></i>Add topic</a>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#quick-@sec.Id"><i class="fa-solid fa-list me-1"></i>Add class topics (titles only)</button>
+            <form asp-action="AddTopics" method="post" class="collapse mt-3" id="quick-@sec.Id">
+                <input type="hidden" name="sectionId" value="@sec.Id" />
+                <label class="form-label small" for="titles-@sec.Id">One topic per line. They are taught in class and can be picked when you schedule a class.</label>
+                <textarea name="titles" id="titles-@sec.Id" class="form-control mb-2" rows="4" placeholder="Variables and data types&#10;If / else&#10;Loops"></textarea>
+                <button type="submit" class="btn btn-sm btn-brand"><i class="fa-solid fa-plus me-1"></i>Add topics</button>
+            </form>
         </div>
     </div>
 }
 
 @if (!Model.Sections.Any())
 {
-    <div class="card-lms mb-3"><div class="empty-state"><i class="fa-solid fa-layer-group"></i>Start by adding the first section, e.g. "Introduction".</div></div>
+    <div class="card-lms mb-3"><div class="empty-state"><i class="fa-solid fa-layer-group"></i>Start by adding the first module, e.g. "Introduction". Then add its topics.</div></div>
 }
 
 <div class="card-lms">
     <div class="card-lms-body">
         <form asp-action="AddSection" method="post" class="d-flex flex-wrap gap-2">
             <input type="hidden" name="courseId" value="@Model.Id" />
-            <input name="title" class="form-control flex-grow-1" style="max-width:480px" placeholder="New section title, e.g. Week 1: Getting started" required maxlength="200" />
-            <button type="submit" class="btn btn-brand"><i class="fa-solid fa-plus me-1"></i>Add section</button>
+            <input name="title" class="form-control flex-grow-1" style="max-width:480px" placeholder="New module title, e.g. Module 1: Getting started" required maxlength="200" />
+            <button type="submit" class="btn btn-brand"><i class="fa-solid fa-plus me-1"></i>Add module</button>
         </form>
     </div>
 </div>
