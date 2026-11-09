@@ -1803,7 +1803,6 @@ BEGIN
     VALUES (N'20261108083802_CourseMode', N'9.0.4');
 END;
 
-
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
     WHERE [MigrationId] = N'20261108085517_LiveClassTopics'
@@ -1833,6 +1832,48 @@ IF NOT EXISTS (
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
     VALUES (N'20261108085517_LiveClassTopics', N'9.0.4');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261109055241_LiveClassAttendance'
+)
+BEGIN
+    CREATE TABLE [LiveClassAttendances] (
+        [Id] int NOT NULL IDENTITY,
+        [LiveClassId] int NOT NULL,
+        [EnrollmentId] int NOT NULL,
+        [Status] int NOT NULL,
+        [MarkedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_LiveClassAttendances] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_LiveClassAttendances_Enrollments_EnrollmentId] FOREIGN KEY ([EnrollmentId]) REFERENCES [Enrollments] ([Id]) ON DELETE CASCADE,
+        CONSTRAINT [FK_LiveClassAttendances_LiveClasses_LiveClassId] FOREIGN KEY ([LiveClassId]) REFERENCES [LiveClasses] ([Id]) ON DELETE CASCADE
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261109055241_LiveClassAttendance'
+)
+BEGIN
+    CREATE INDEX [IX_LiveClassAttendances_EnrollmentId] ON [LiveClassAttendances] ([EnrollmentId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261109055241_LiveClassAttendance'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_LiveClassAttendances_LiveClassId_EnrollmentId] ON [LiveClassAttendances] ([LiveClassId], [EnrollmentId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261109055241_LiveClassAttendance'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261109055241_LiveClassAttendance', N'9.0.4');
 END;
 
 COMMIT;

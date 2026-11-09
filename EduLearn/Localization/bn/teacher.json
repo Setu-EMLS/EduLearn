@@ -35,6 +35,20 @@
   "View or replace the recording": "রেকর্ডিং দেখুন বা বদলান",
   "{0} ({#1} min)": "{0} ({1} মিনিট)",
 
+  // ---- live class attendance
+  "Attendance": "হাজিরা",
+  "Class Attendance": "ক্লাসের হাজিরা",
+  "Take attendance": "হাজিরা নিন",
+  "Save attendance": "হাজিরা সংরক্ষণ করুন",
+  "Mark all present": "সবাইকে উপস্থিত দিন",
+  "Mark all absent": "সবাইকে অনুপস্থিত দিন",
+  "Present": "উপস্থিত",
+  "Absent": "অনুপস্থিত",
+  "When it starts": "ক্লাস শুরু হলে",
+  "Present or late / students marked. Click to view or change.": "উপস্থিত বা দেরিতে আসা / হাজিরা দেওয়া শিক্ষার্থী। দেখতে বা বদলাতে ক্লিক করুন।",
+  "No students with access to this course yet.": "এই কোর্সে এখনো কোনো শিক্ষার্থীর প্রবেশাধিকার নেই।",
+  "No students with access to this batch yet.": "এই ব্যাচে এখনো কোনো শিক্ষার্থীর প্রবেশাধিকার নেই।",
+
   // ---- quizzes
   "Draft — students can't see it": "খসড়া — শিক্ষার্থীরা এটি দেখতে পায় না",
   "No questions yet. Add the first one.": "এখনো কোনো প্রশ্ন নেই। প্রথমটি যোগ করুন।",

@@ -103,6 +103,36 @@ namespace EduLearn.Models.Lms
 		// The curriculum topics this class covers
 		[ValidateNever]
 		public List<LiveClassTopic> Topics { get; set; } = new List<LiveClassTopic>();
+
+		// Who attended; a student with no row here hasn't been marked yet
+		[ValidateNever]
+		public List<LiveClassAttendance> Attendances { get; set; } = new List<LiveClassAttendance>();
+	}
+
+	public enum AttendanceStatus
+	{
+		Present = 0,
+		Late = 1,
+		Absent = 2
+	}
+
+	/// <summary>One student's attendance for one live class, marked by the teacher.</summary>
+	public class LiveClassAttendance
+	{
+		public int Id { get; set; }
+		public int LiveClassId { get; set; }
+		[ValidateNever]
+		public LiveClass LiveClass { get; set; }
+		public int EnrollmentId { get; set; }
+		[ValidateNever]
+		public Enrollment Enrollment { get; set; }
+
+		public AttendanceStatus Status { get; set; }
+		public DateTime MarkedAt { get; set; } = DateTime.Now;
+
+		/// <summary>Late students still took part in the class.</summary>
+		[NotMapped]
+		public bool Attended => Status != AttendanceStatus.Absent;
 	}
 
 	/// <summary>Links a live class to a topic (Lesson) of its course's curriculum.</summary>

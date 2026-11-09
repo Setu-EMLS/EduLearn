@@ -1,0 +1,103 @@
+@model LiveClass
+@{
+    ViewData["Title"] = "Class Attendance";
+    var enrollments = (List<Enrollment>)ViewBag.Enrollments;
+    var marked = (Dictionary<int, AttendanceStatus>)ViewBag.Marked;
+    var showBatch = Model.BatchId == null && enrollments.Any(e => e.Batch != null);
+    var options = new[]
+    {
+        (Value: AttendanceStatus.Present, Label: "Present", Style: "success"),
+        (Value: AttendanceStatus.Late, Label: "Late", Style: "warning"),
+        (Value: AttendanceStatus.Absent, Label: "Absent", Style: "danger")
+    };
+}
+<div class="page-head">
+    <div>
+        <h2>Attendance</h2>
+        <p>@Model.Title · @Model.Course.Title@(Model.Batch != null ? " · " + Model.Batch.Name : "") · @Model.StartsAt.ToString("ddd, dd MMM yyyy, h:mm tt")</p>
+    </div>
+    <a asp-action="Index" class="btn btn-light">Back</a>
+</div>
+
+<form asp-action="Attendance" asp-route-id="@Model.Id" method="post" class="card-lms">
+    @if (enrollments.Any())
+    {
+        <div class="card-lms-body border-bottom d-flex flex-wrap align-items-center gap-3">
+            <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-sm btn-outline-success" data-all="@((int)AttendanceStatus.Present)">Mark all present</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-all="@((int)AttendanceStatus.Absent)">Mark all absent</button>
+            </div>
+            <div class="ms-auto small">
+                <span class="badge bg-success" id="countPresent">0</span> Present
+                <span class="badge bg-warning text-dark ms-2" id="countLate">0</span> Late
+                <span class="badge bg-danger ms-2" id="countAbsent">0</span> Absent
+            </div>
+        </div>
+        <div class="card-lms-body">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead><tr><th>Student</th>@if (showBatch) { <th>Batch</th> }<th class="text-end">Attendance</th></tr></thead>
+                    <tbody>
+                        @foreach (var e in enrollments)
+                        {
+                            // Students not marked yet start as present, so only the absentees need a click
+                            var current = marked.TryGetValue(e.Id, out var m) ? m : AttendanceStatus.Present;
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="@UiHelpers.Avatar(e.Student.PhotoPath)" class="avatar-sm" alt="" />
+                                        <div><div class="fw-semibold">@e.Student.Name</div><small class="text-muted">@e.Student.StudentID</small></div>
+                                    </div>
+                                </td>
+                                @if (showBatch) { <td>@(e.Batch?.Name ?? "—")</td> }
+                                <td class="text-end text-nowrap">
+                                    <div class="btn-group" role="group">
+                                        @foreach (var o in options)
+                                        {
+                                            var id = $"att-{e.Id}-{(int)o.Value}";
+                                            <input type="radio" class="btn-check" name="status[@e.Id]" id="@id" value="@((int)o.Value)" @(current == o.Value ? "checked" : "") />
+                                            <label class="btn btn-sm btn-outline-@o.Style" for="@id">@o.Label</label>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-lms-body border-top d-flex gap-2 align-items-center">
+            <button type="submit" class="btn btn-brand px-4"><i class="fa-solid fa-check me-1"></i>Save attendance</button>
+            <a asp-action="Index" class="btn btn-light">Cancel</a>
+        </div>
+    }
+    else
+    {
+        <div class="card-lms-body">
+            <div class="empty-state"><i class="fa-solid fa-user-group"></i>No students with access to this @(Model.Batch != null ? "batch" : "course") yet.</div>
+        </div>
+    }
+</form>
+
+@section Scripts {
+    <script>
+        (function () {
+            var form = document.querySelector('form.card-lms');
+            function count() {
+                var totals = { 0: 0, 1: 0, 2: 0 };
+                form.querySelectorAll('input[type=radio]:checked').forEach(function (r) { totals[r.value]++; });
+                document.getElementById('countPresent').textContent = totals[0];
+                document.getElementById('countLate').textContent = totals[1];
+                document.getElementById('countAbsent').textContent = totals[2];
+            }
+            form.addEventListener('change', count);
+            form.querySelectorAll('[data-all]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    form.querySelectorAll('input[type=radio][value="' + btn.dataset.all + '"]').forEach(function (r) { r.checked = true; });
+                    count();
+                });
+            });
+            count();
+        })();
+    </script>
+}

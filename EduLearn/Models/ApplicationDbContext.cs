@@ -100,6 +100,7 @@ namespace EduLearn.Models
 		public DbSet<Announcement> Announcements { get; set; }
 		public DbSet<LiveClass> LiveClasses { get; set; }
 		public DbSet<LiveClassTopic> LiveClassTopics { get; set; }
+		public DbSet<LiveClassAttendance> LiveClassAttendances { get; set; }
 		public DbSet<Batch> Batches { get; set; }
 
 		//=====================Website====================//
@@ -208,6 +209,15 @@ namespace EduLearn.Models
 			modelBuilder.Entity<LiveClassTopic>()
 				.HasOne(t => t.Lesson).WithMany()
 				.HasForeignKey(t => t.LessonId).OnDelete(DeleteBehavior.Cascade);
+
+			// Attendance goes away with its class or its enrollment (neither has a cascading parent in common)
+			modelBuilder.Entity<LiveClassAttendance>().HasIndex(a => new { a.LiveClassId, a.EnrollmentId }).IsUnique();
+			modelBuilder.Entity<LiveClassAttendance>()
+				.HasOne(a => a.LiveClass).WithMany(l => l.Attendances)
+				.HasForeignKey(a => a.LiveClassId).OnDelete(DeleteBehavior.Cascade);
+			modelBuilder.Entity<LiveClassAttendance>()
+				.HasOne(a => a.Enrollment).WithMany()
+				.HasForeignKey(a => a.EnrollmentId).OnDelete(DeleteBehavior.Cascade);
 
 			// Batches: deleted with their course. Rows that point at a batch don't cascade from it
 			// (they already cascade from the course, and SQL Server rejects a second path);

@@ -1437,6 +1437,36 @@ namespace EduLearn.Migrations
                     b.ToTable("LiveClasses");
                 });
 
+            modelBuilder.Entity("EduLearn.Models.Lms.LiveClassAttendance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EnrollmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LiveClassId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("MarkedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EnrollmentId");
+
+                    b.HasIndex("LiveClassId", "EnrollmentId")
+                        .IsUnique();
+
+                    b.ToTable("LiveClassAttendances");
+                });
+
             modelBuilder.Entity("EduLearn.Models.Lms.LiveClassTopic", b =>
                 {
                     b.Property<int>("LiveClassId")
@@ -2028,6 +2058,25 @@ namespace EduLearn.Migrations
                     b.Navigation("Course");
                 });
 
+            modelBuilder.Entity("EduLearn.Models.Lms.LiveClassAttendance", b =>
+                {
+                    b.HasOne("EduLearn.Models.Lms.Enrollment", "Enrollment")
+                        .WithMany()
+                        .HasForeignKey("EnrollmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EduLearn.Models.Lms.LiveClass", "LiveClass")
+                        .WithMany("Attendances")
+                        .HasForeignKey("LiveClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Enrollment");
+
+                    b.Navigation("LiveClass");
+                });
+
             modelBuilder.Entity("EduLearn.Models.Lms.LiveClassTopic", b =>
                 {
                     b.HasOne("EduLearn.Models.Lms.Lesson", "Lesson")
@@ -2219,6 +2268,8 @@ namespace EduLearn.Migrations
 
             modelBuilder.Entity("EduLearn.Models.Lms.LiveClass", b =>
                 {
+                    b.Navigation("Attendances");
+
                     b.Navigation("Topics");
                 });
 

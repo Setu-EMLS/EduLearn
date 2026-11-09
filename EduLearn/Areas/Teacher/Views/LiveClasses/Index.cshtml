@@ -15,7 +15,7 @@
     <div class="card-lms-body">
         <div class="table-responsive">
             <table class="table datatable">
-                <thead><tr><th>When</th><th>Class</th><th>Course</th><th>Link</th><th>Status</th><th>Recording</th><th class="no-sort text-end">Actions</th></tr></thead>
+                <thead><tr><th>When</th><th>Class</th><th>Course</th><th>Link</th><th>Status</th><th>Attendance</th><th>Recording</th><th class="no-sort text-end">Actions</th></tr></thead>
                 <tbody>
                     @foreach (var l in Model)
                     {
@@ -36,6 +36,20 @@
                                 @if (now > ends) { <span class="badge bg-secondary">Finished</span> }
                                 else if (now >= l.StartsAt) { <span class="badge bg-danger">Live now</span> }
                                 else { <span class="badge bg-primary">Upcoming</span> }
+                            </td>
+                            <td class="text-nowrap">
+                                @if (l.Attendances.Any())
+                                {
+                                    <a asp-action="Attendance" asp-route-id="@l.Id" class="badge bg-success text-decoration-none" title="Present or late / students marked. Click to view or change."><i class="fa-solid fa-user-check me-1"></i>@l.Attendances.Count(a => a.Attended) / @l.Attendances.Count</a>
+                                }
+                                else if (now >= l.StartsAt)
+                                {
+                                    <a asp-action="Attendance" asp-route-id="@l.Id" class="btn btn-sm btn-outline-brand"><i class="fa-solid fa-user-check me-1"></i>Take attendance</a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">When it starts</span>
+                                }
                             </td>
                             <td class="text-nowrap">
                                 @if (l.HasRecording)

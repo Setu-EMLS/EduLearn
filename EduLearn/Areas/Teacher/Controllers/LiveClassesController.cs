@@ -26,6 +26,7 @@ namespace EduLearn.Areas.Teacher.Controllers
 				.Include(l => l.Course)
 				.Include(l => l.Batch)
 				.Include(l => l.Topics).ThenInclude(t => t.Lesson)
+				.Include(l => l.Attendances)
 				.Where(l => courseIds.Contains(l.CourseId))
 				.OrderByDescending(l => l.StartsAt)
 				.ToListAsync();
@@ -104,11 +105,68 @@ namespace EduLearn.Areas.Teacher.Controllers
 			return RedirectToAction(nameof(Index));
 		}
 
+		//==================== Attendance ====================//
+
+		public async Task<IActionResult> Attendance(int id)
+		{
+			var live = await FindWithCourseAsync(id);
+			if (live == null) return NotFound();
+			await LoadAttendanceAsync(live);
+			return View(live);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> Attendance(int id, Dictionary<int, AttendanceStatus>? status)
+		{
+			var live = await FindWithCourseAsync(id);
+			if (live == null) return NotFound();
+
+			var students = await AttendanceEnrollmentsAsync(live);
+			var marked = await Db.LiveClassAttendances.Where(a => a.LiveClassId == id).ToDictionaryAsync(a => a.EnrollmentId);
+			var now = DateTime.Now;
+			foreach (var e in students)
+			{
+				if (status == null || !status.TryGetValue(e.Id, out var value) || !Enum.IsDefined(value)) continue;
+				if (marked.TryGetValue(e.Id, out var row))
+				{
+					if (row.Status == value) continue;
+					row.Status = value;
+					row.MarkedAt = now;
+				}
+				else
+				{
+					Db.LiveClassAttendances.Add(new LiveClassAttendance { LiveClassId = id, EnrollmentId = e.Id, Status = value, MarkedAt = now });
+				}
+			}
+			await Db.SaveChangesAsync();
+			TempData["Success"] = "Attendance saved.";
+			return RedirectToAction(nameof(Index));
+		}
+
+		/// <summary>Students who can attend the class: access to the course, and in its batch when it has one.</summary>
+		private async Task<List<Enrollment>> AttendanceEnrollmentsAsync(LiveClass live) =>
+			await Db.Enrollments
+				.Include(e => e.Student)
+				.Include(e => e.Batch)
+				.Where(e => e.CourseId == live.CourseId
+					&& (e.Status == EnrollmentStatus.Active || e.Status == EnrollmentStatus.Completed)
+					&& (live.BatchId == null || e.BatchId == live.BatchId))
+				.OrderBy(e => e.Student.Name)
+				.ToListAsync();
+
+		private async Task LoadAttendanceAsync(LiveClass live)
+		{
+			ViewBag.Enrollments = await AttendanceEnrollmentsAsync(live);
+			ViewBag.Marked = await Db.LiveClassAttendances
+				.Where(a => a.LiveClassId == live.Id)
+				.ToDictionaryAsync(a => a.EnrollmentId, a => a.Status);
+		}
+
 		//==================== Recording ====================//
 
 		public async Task<IActionResult> Recording(int id)
 		{
-			var live = await FindForRecordingAsync(id);
+			var live = await FindWithCourseAsync(id);
 			if (live == null) return NotFound();
 			return View(live);
 		}
@@ -118,7 +176,7 @@ namespace EduLearn.Areas.Teacher.Controllers
 		[RequestFormLimits(MultipartBodyLengthLimit = MaxRecordingBytes)]
 		public async Task<IActionResult> Recording(int id, IFormFile? file, string? url, bool remove = false)
 		{
-			var live = await FindForRecordingAsync(id);
+			var live = await FindWithCourseAsync(id);
 			if (live == null) return NotFound();
 
 			if (remove)
@@ -161,7 +219,7 @@ namespace EduLearn.Areas.Teacher.Controllers
 			return RedirectToAction(nameof(Index));
 		}
 
-		private async Task<LiveClass?> FindForRecordingAsync(int id)
+		private async Task<LiveClass?> FindWithCourseAsync(int id)
 		{
 			var live = await Db.LiveClasses.Include(l => l.Course).Include(l => l.Batch).FirstOrDefaultAsync(l => l.Id == id);
 			return live != null && await CanManageCourseAsync(live.CourseId) ? live : null;

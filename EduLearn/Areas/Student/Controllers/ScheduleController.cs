@@ -38,6 +38,11 @@ namespace EduLearn.Areas.Student.Controllers
 				.Where(l => l.RecordingPath != null || l.RecordingUrl != null)
 				.OrderByDescending(l => l.StartsAt)
 				.ToListAsync();
+			// My attendance per class; classes the teacher hasn't marked yet have no entry
+			var enrollmentIds = enrollments.Select(e => e.Id).ToList();
+			ViewBag.Attendance = await Db.LiveClassAttendances
+				.Where(a => enrollmentIds.Contains(a.EnrollmentId))
+				.ToDictionaryAsync(a => a.LiveClassId, a => a.Status);
 			// Regular class times: the batch's schedule, or the course's when it has no batches
 			ViewBag.Enrollments = enrollments;
 			return View(classes);
